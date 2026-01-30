@@ -1,0 +1,7 @@
+{
+  "name": "zoho-books-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
