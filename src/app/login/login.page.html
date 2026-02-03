@@ -1,0 +1,101 @@
+<ion-content [fullscreen]="true" class="login-content">
+  <div class="login-wrapper">
+     <div class="login-container">
+        <div class="login-card">
+
+            <!-- Right Side -->
+            <div class="login-right">
+                <div class="login-header">
+                    <h2>Chale Books</h2>
+                    <p>Manage All Your Business Finances With Ease</p>
+                </div>
+
+                <form (ngSubmit)="login()">
+                   
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <i class="bi bi-envelope input-icon"></i>
+                        <input id="email"
+                              type="email" 
+                              [(ngModel)]="email" 
+                              name="email"
+                               class="form-control" 
+                               name="email" 
+                               value="" 
+                               required 
+                               autocomplete="email" 
+                               autofocus
+                               placeholder="Enter your email">
+                       
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <i class="bi bi-lock input-icon"></i>
+                        <input id="password" 
+                              [(ngModel)]="password"
+                               type="password" 
+                               class="form-control" 
+                               name="password" 
+                               required 
+                               autocomplete="current-password"
+                               placeholder="Enter your password">
+                       
+                    </div>
+
+                   
+
+                   
+
+                    <button type="submit" class="btn-login" [disabled]="isLoading">
+                        <span *ngIf="!isLoading">Sign In</span>
+                        <span *ngIf="isLoading">
+                            <ion-spinner name="crescent" style="width: 16px; height: 16px; margin-right: 8px;"></ion-spinner>
+                            Signing In...
+                        </span>
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>Chale</span>
+                </div>
+
+              
+
+                <div class="links">
+                    <p style="text-align: center;color:darkgray;">&copy; 2026 Chale Books. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <ion-card class="login-card">
+      <ion-card-header>
+        <ion-card-title class="login-title">Chale Books</ion-card-title>
+        <ion-card-subtitle class="login-subtitle" style="margin-bottom: -3px;margin-top:-3px;">Finance</ion-card-subtitle>
+        <ion-card-subtitle>Manage All Your Business Finances With Ease</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <form (ngSubmit)="login()">
+          <ion-item>
+            <ion-label position="floating">Email</ion-label>
+            <ion-input type="email" [(ngModel)]="email" name="email" required></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Password</ion-label>
+            <ion-input type="password" [(ngModel)]="password" name="password" required></ion-input>
+          </ion-item>
+          <ion-button expand="block" type="submit" class="login-button">Login</ion-button>
+        </form>
+        <hr style="background: rgba(128, 128, 128, 0.671);width: 100%;height: 1px;margin: 16px 0;">
+        <p style="text-align: center;">&copy; 2026 Chale Books. All rights reserved.</p>
+      </ion-card-content>
+    </ion-card> -->
+  </div>
+  <ion-toast
+    [isOpen]="isToastOpen"
+    message="{{ toastMessage }}"
+    duration="2000"
+    (didDismiss)="setToastOpen(false)">
+  </ion-toast>
+</ion-content>

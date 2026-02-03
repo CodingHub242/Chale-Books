@@ -1,0 +1,273 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+     <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Invoices</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!isAdding && !editingInvoice">
+    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search invoices..." animated></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Invoice List -->
+  <div *ngIf="!isAdding && !editingInvoice" class="invoices-container">
+    <ion-card *ngFor="let invoice of getFilteredInvoices()" class="invoice-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="8">
+              <h2 class="invoice-title">{{ invoice.invoice_number || 'Invoice #' + invoice.id }}</h2>
+              <p class="invoice-client">
+                <ion-icon name="person"></ion-icon>
+                {{ invoice.client?.name }}
+              </p>
+              <p class="invoice-date">
+                <ion-icon name="calendar"></ion-icon>
+                Due: {{ invoice.due_date }}
+              </p>
+            </ion-col>
+            <ion-col size="12" size-md="4" class="ion-text-end">
+              <h3 class="invoice-amount">
+                {{ invoice.total || invoice.amount | number:'1.2-2' }} {{ invoice.currency?.code }}
+              </h3>
+              <ion-badge [color]="getStatusColor(invoice.status)">
+                {{ invoice.status | uppercase }}
+              </ion-badge>
+            </ion-col>
+          </ion-row>
+          
+          <!-- Items Preview -->
+          <ion-row *ngIf="invoice.items && invoice.items.length > 0">
+            <ion-col size="12">
+              <div class="items-preview">
+                <p class="items-label">Items:</p>
+                <ul class="items-list">
+                  <li *ngFor="let item of invoice.items">
+                    {{ item.description }} ({{ item.quantity }} × {{ item.unit_price | number:'1.2-2' }})
+                  </li>
+                </ul>
+              </div>
+            </ion-col>
+          </ion-row>
+
+          <!-- Actions -->
+          <ion-row class="action-buttons">
+            <ion-col>
+              <ion-button size="small" fill="outline" (click)="editInvoice(invoice)">
+                <ion-icon name="create" slot="start"></ion-icon>
+                Edit
+              </ion-button>
+              <ion-button size="small" fill="outline" (click)="previewPdf(invoice)">
+                <ion-icon name="eye" slot="start"></ion-icon>
+                Preview
+              </ion-button>
+              <ion-button size="small" fill="outline" (click)="downloadPdf(invoice)">
+                <ion-icon name="download" slot="start"></ion-icon>
+                Download
+              </ion-button>
+              <ion-button size="small" fill="outline" (click)="sendInvoice(invoice)" *ngIf="invoice.status === 'draft' || invoice.status === 'unpaid'">
+                <ion-icon name="mail" slot="start"></ion-icon>
+                Send
+              </ion-button>
+              <ion-button size="small" color="danger" fill="outline" (click)="deleteInvoice(invoice)">
+                <ion-icon name="trash" slot="start"></ion-icon>
+                Delete
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="getFilteredInvoices().length === 0" class="empty-state">
+      <ion-icon name="document-outline" class="empty-icon"></ion-icon>
+      <h2>No invoices found</h2>
+      <p>Create your first invoice to get started</p>
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Create Invoice
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Add/Edit Invoice Form -->
+  <div *ngIf="isAdding || editingInvoice" class="form-container">
+    <ion-card>
+      <ion-card-content>
+        <h2>{{ editingInvoice ? 'Edit Invoice' : 'New Invoice' }}</h2>
+        
+        <form [formGroup]="invoiceForm" (ngSubmit)="editingInvoice ? updateInvoice() : submitInvoice()">
+          <!-- Client Selection -->
+          <ion-item>
+            <ion-label position="floating">Client *</ion-label>
+            <ion-select formControlName="client_id" placeholder="Select client">
+              <ion-select-option *ngFor="let client of clients" [value]="client.id">
+                {{ client.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Currency Selection -->
+          <ion-item>
+            <ion-label position="floating">Currency *</ion-label>
+            <ion-select formControlName="currency_id" placeholder="Select currency">
+              <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
+                {{ currency.code }} - {{ currency.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Due Date -->
+          <ion-item>
+            <ion-label position="floating">Due Date *</ion-label>
+            <ion-input type="date" formControlName="due_date"></ion-input>
+          </ion-item>
+
+          <!-- Status -->
+          <ion-item>
+            <ion-label position="floating">Status</ion-label>
+            <ion-select formControlName="status">
+              <ion-select-option value="draft">Draft</ion-select-option>
+              <ion-select-option value="unpaid">Unpaid</ion-select-option>
+              <ion-select-option value="paid">Paid</ion-select-option>
+              <ion-select-option value="overdue">Overdue</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Line Items -->
+          <div class="items-section">
+            <h3>Line Items</h3>
+            
+            <div formArrayName="items">
+              <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="item-row">
+                <ion-card>
+                  <ion-card-content>
+                    <ion-grid>
+                      <ion-row>
+                        <ion-col size="12">
+                          <ion-item>
+                            <ion-label position="floating">Description *</ion-label>
+                            <ion-textarea formControlName="description" rows="2"></ion-textarea>
+                          </ion-item>
+                        </ion-col>
+                      </ion-row>
+                      <ion-row>
+                        <ion-col size="6" size-md="2">
+                          <ion-item>
+                            <ion-label position="floating">Qty *</ion-label>
+                            <ion-input type="number" formControlName="quantity" min="1"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="6" size-md="3">
+                          <ion-item>
+                            <ion-label position="floating">Unit Price *</ion-label>
+                            <ion-input type="number" formControlName="unit_price" min="0" step="0.01"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="6" size-md="2">
+                          <ion-item>
+                            <ion-label position="floating">Tax %</ion-label>
+                            <ion-input type="number" formControlName="tax_rate" min="0" max="100" step="0.01"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="6" size-md="3">
+                          <ion-item>
+                            <ion-label position="floating">Discount</ion-label>
+                            <ion-input type="number" formControlName="discount" min="0" step="0.01"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="12" size-md="2" class="item-total">
+                          <p class="total-label">Total:</p>
+                          <p class="total-amount">{{ calculateItemTotal(item.value) | number:'1.2-2' }}</p>
+                        </ion-col>
+                      </ion-row>
+                      <ion-row>
+                        <ion-col class="ion-text-end">
+                          <ion-button size="small" color="danger" fill="outline" (click)="removeItem(i)" [disabled]="items.length === 1">
+                            <ion-icon name="trash" slot="icon-only"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
+                  </ion-card-content>
+                </ion-card>
+              </div>
+            </div>
+
+            <ion-button expand="block" fill="outline" (click)="addItem()">
+              <ion-icon name="add" slot="start"></ion-icon>
+              Add Item
+            </ion-button>
+          </div>
+
+          <!-- Totals Summary -->
+          <ion-card class="totals-card">
+            <ion-card-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Subtotal:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    {{ calculateSubtotal() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Discount:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    -{{ calculateTotalDiscount() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Tax:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    {{ calculateTotalTax() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row class="grand-total">
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>TOTAL:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>{{ calculateGrandTotal() | number:'1.2-2' }}</strong>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Notes -->
+          <ion-item>
+            <ion-label position="floating">Notes</ion-label>
+            <ion-textarea formControlName="notes" rows="3"></ion-textarea>
+          </ion-item>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <ion-button expand="block" type="submit" [disabled]="!invoiceForm.valid">
+              {{ editingInvoice ? 'Update Invoice' : 'Create Invoice' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="editingInvoice ? cancelEdit() : cancelAdd()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+
+</ion-content>

@@ -1,0 +1,82 @@
+.users-container {
+  padding: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.users-header {
+  margin-bottom: 20px;
+  
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 8px 0 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+.user-item {
+  margin-bottom: 8px;
+  border-radius: 8px;
+  --background: var(--ion-item-background, var(--ion-background-color, #fff));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.role-chip {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    font-size: 64px;
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    margin-bottom: 20px;
+  }
+}
+
+.modal-form-container {
+  padding: 16px;
+  
+  ion-item {
+    margin-bottom: 16px;
+  }
+}
+
+// Modal styling
+ion-modal {
+  --height: 500px;
+  --width: 90%;
+  --max-width: 500px;
+  --border-radius: 12px;
+  --backdrop-opacity: 0.5;
+}
+
+ion-modal ion-content {
+  --padding: 16px;
+}

@@ -1,0 +1,311 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Quotes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!isAdding && !editingQuote">
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange()" placeholder="Search quotes..." animated></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Quote List -->
+  <div *ngIf="!isAdding && !editingQuote" class="quotes-container">
+    <ion-card *ngFor="let quote of getFilteredQuotes()" class="quote-card">
+      <ion-card-content>
+        <div class="quote-header">
+          <div class="quote-icon">
+            Q{{ quote.id }}
+          </div>
+          <div class="quote-info">
+            <h2 class="quote-title">
+              <ion-icon name="document"></ion-icon>
+              Quote #{{ quote.id }}
+            </h2>
+          </div>
+        </div>
+
+        <div class="quote-details">
+          <div class="quote-detail-item client">
+            <ion-icon name="person"></ion-icon>
+            <span>{{ quote.client?.name }}</span>
+          </div>
+          <div class="quote-detail-item date">
+            <ion-icon name="calendar"></ion-icon>
+            <span>Expires: {{ formatExpiryDate(quote.expiry_date) }}</span>
+          </div>
+        </div>
+
+        <div class="quote-amount-section">
+          <h3 class="quote-amount">
+            {{ quote.total || quote.amount | number:'1.2-2' }} {{ quote.currency?.code }}
+          </h3>
+          <div class="quote-status">
+            <ion-badge [color]="getStatusColor(quote.status)">
+              {{ quote.status | uppercase }}
+            </ion-badge>
+          </div>
+        </div>
+
+        <!-- Items Preview -->
+        <div *ngIf="quote.items && quote.items.length > 0" class="items-preview">
+          <p class="items-label">Items:</p>
+          <ul class="items-list">
+            <li *ngFor="let item of quote.items">
+              {{ item.description }} ({{ item.quantity }} × {{ item.unit_price | number:'1.2-2' }})
+            </li>
+          </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-buttons">
+          <ion-button fill="outline" (click)="editQuote(quote)">
+            <ion-icon name="create" slot="start"></ion-icon>
+            Edit
+          </ion-button>
+          <ion-button fill="outline" (click)="previewPdf(quote)">
+            <ion-icon name="eye" slot="start"></ion-icon>
+            Preview
+          </ion-button>
+          <ion-button fill="outline" (click)="downloadPdf(quote)">
+            <ion-icon name="download" slot="start"></ion-icon>
+            Download
+          </ion-button>
+          <ion-button fill="outline" (click)="sendQuote(quote)" *ngIf="quote.status === 'draft'">
+            <ion-icon name="mail" slot="start"></ion-icon>
+            Send
+          </ion-button>
+          <ion-button color="success" (click)="convertToInvoice(quote)" *ngIf="quote.status === 'accepted'">
+            <ion-icon name="checkmark" slot="start"></ion-icon>
+            Convert
+          </ion-button>
+          <ion-button color="danger" fill="outline" (click)="deleteQuote(quote)">
+            <ion-icon name="trash" slot="icon-only"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination-container">
+      <ion-grid>
+        <ion-row class="ion-justify-content-center">
+          <ion-col size="12" class="ion-text-center">
+            <div class="pagination-controls">
+              <ion-button
+                fill="outline"
+                [disabled]="currentPage === 1"
+                (click)="previousPage()">
+                <ion-icon name="chevron-back" slot="start"></ion-icon>
+                Previous
+              </ion-button>
+
+              <span class="page-info">
+                Page {{ currentPage }} of {{ totalPages }}
+                ({{ totalQuotes }} total quotes)
+              </span>
+
+              <ion-button
+                fill="outline"
+                [disabled]="currentPage === totalPages"
+                (click)="nextPage()">
+                Next
+                <ion-icon name="chevron-forward" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <div *ngIf="getFilteredQuotes().length === 0" class="empty-state">
+      <ion-icon name="document-outline" class="empty-icon"></ion-icon>
+      <h2>No quotes found</h2>
+      <p>Create your first quote to get started</p>
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Create Quote
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Add/Edit Quote Form -->
+  <div *ngIf="isAdding || editingQuote" class="form-container">
+    <ion-card>
+      <ion-card-content>
+        <h2>{{ editingQuote ? 'Edit Quote' : 'New Quote' }}</h2>
+
+        <form [formGroup]="quoteForm" (ngSubmit)="editingQuote ? updateQuote() : submitQuote()">
+          <!-- Client Selection -->
+          <ion-item>
+            <ion-label position="floating">Client *</ion-label>
+            <ion-select formControlName="client_id" placeholder="Select client">
+              <ion-select-option *ngFor="let client of clients" [value]="client.id">
+                {{ client.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Currency Selection -->
+          <ion-item>
+            <ion-label position="floating">Currency *</ion-label>
+            <ion-select formControlName="currency_id" placeholder="Select currency">
+              <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
+                {{ currency.code }} - {{ currency.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Expiry Date -->
+          <ion-item>
+            <ion-label position="floating">Expiry Date *</ion-label>
+            <ion-input type="date" formControlName="expiry_date"></ion-input>
+          </ion-item>
+
+          <!-- Status -->
+          <ion-item>
+            <ion-label position="floating">Status</ion-label>
+            <ion-select formControlName="status">
+              <ion-select-option value="draft">Draft</ion-select-option>
+              <ion-select-option value="sent">Sent</ion-select-option>
+              <ion-select-option value="accepted">Accepted</ion-select-option>
+              <ion-select-option value="rejected">Rejected</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Line Items -->
+          <div class="items-section">
+            <h3>Line Items</h3>
+
+            <div formArrayName="items">
+              <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="item-row">
+                <ion-card>
+                  <ion-card-content>
+                    <ion-grid>
+                      <ion-row>
+                        <ion-col size="12">
+                          <ion-item>
+                            <ion-label position="floating">Description *</ion-label>
+                            <ion-textarea formControlName="description" rows="2"></ion-textarea>
+                          </ion-item>
+                        </ion-col>
+                      </ion-row>
+                      <ion-row>
+                        <ion-col size="6" size-md="2">
+                          <ion-item>
+                            <ion-label position="floating">Qty *</ion-label>
+                            <ion-input type="number" formControlName="quantity" min="1"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="6" size-md="3">
+                          <ion-item>
+                            <ion-label position="floating">Unit Price *</ion-label>
+                            <ion-input type="number" formControlName="unit_price" min="0" step="0.01"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="6" size-md="2">
+                          <ion-item>
+                            <ion-label position="floating">Tax %</ion-label>
+                            <ion-input type="number" formControlName="tax_rate" min="0" max="100" step="0.01"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="6" size-md="3">
+                          <ion-item>
+                            <ion-label position="floating">Discount</ion-label>
+                            <ion-input type="number" formControlName="discount" min="0" step="0.01"></ion-input>
+                          </ion-item>
+                        </ion-col>
+                        <ion-col size="12" size-md="2" class="item-total">
+                          <p class="total-label">Total:</p>
+                          <p class="total-amount">{{ calculateItemTotal(item.value) | number:'1.2-2' }}</p>
+                        </ion-col>
+                      </ion-row>
+                      <ion-row>
+                        <ion-col class="ion-text-end">
+                          <ion-button size="small" color="danger" fill="outline" (click)="removeItem(i)" [disabled]="items.length === 1">
+                            <ion-icon name="trash" slot="icon-only"></ion-icon>
+                          </ion-button>
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
+                  </ion-card-content>
+                </ion-card>
+              </div>
+            </div>
+
+            <ion-button expand="block" fill="outline" (click)="addItem()">
+              <ion-icon name="add" slot="start"></ion-icon>
+              Add Item
+            </ion-button>
+          </div>
+
+          <!-- Totals Summary -->
+          <ion-card class="totals-card">
+            <ion-card-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Subtotal:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    {{ calculateSubtotal() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Discount:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    -{{ calculateTotalDiscount() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Tax:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    {{ calculateTotalTax() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row class="grand-total">
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>TOTAL:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>{{ calculateGrandTotal() | number:'1.2-2' }}</strong>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Notes -->
+          <ion-item>
+            <ion-label position="floating">Notes</ion-label>
+            <ion-textarea formControlName="notes" rows="3"></ion-textarea>
+          </ion-item>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <ion-button expand="block" type="submit" [disabled]="!quoteForm.valid">
+              {{ editingQuote ? 'Update Quote' : 'Create Quote' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="editingQuote ? cancelEdit() : cancelAdd()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

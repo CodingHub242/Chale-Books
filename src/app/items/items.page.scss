@@ -1,0 +1,78 @@
+.item-card {
+  margin: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.item-container{
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.item-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.item-description {
+  margin: 0 0 8px 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.item-price {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  ion-icon {
+    color: var(--ion-color-success);
+  }
+}
+
+.form-card {
+  margin: 16px;
+}
+
+.form-actions {
+  margin-top: 24px;
+
+  ion-button {
+    margin-bottom: 8px;
+  }
+}
+
+.no-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+
+  ion-icon {
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .item-card {
+    margin: 8px;
+  }
+
+  .form-card {
+    margin: 8px;
+  }
+}

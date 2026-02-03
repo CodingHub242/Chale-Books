@@ -1,0 +1,174 @@
+.expenses-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.expense-card {
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.expense-category {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--ion-color-primary);
+}
+
+.expense-description {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium-shade);
+  margin: 4px 0;
+}
+
+.expense-date {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  ion-icon {
+    font-size: 1rem;
+  }
+}
+
+.expense-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--ion-color-danger);
+}
+
+.custom-fields-display {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--ion-color-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--ion-color-primary);
+}
+
+.custom-fields-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--ion-color-dark);
+  font-size: 0.9rem;
+}
+
+.custom-field-item {
+  font-size: 0.85rem;
+  color: var(--ion-color-medium-shade);
+  margin-bottom: 4px;
+  
+  strong {
+    color: var(--ion-color-dark);
+  }
+}
+
+.action-buttons {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ion-color-light-shade);
+
+  ion-button {
+    margin: 4px;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 80px;
+    opacity: 0.3;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin-bottom: 24px;
+  }
+}
+
+.form-container {
+  padding: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--ion-color-primary);
+  }
+
+  ion-item {
+    margin-bottom: 16px;
+  }
+}
+
+.custom-fields-section {
+  margin: 24px 0;
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ion-color-dark);
+  }
+
+  .custom-fields-hint {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+}
+
+.custom-field-row {
+  margin-bottom: 12px;
+
+  ion-card {
+    margin: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  ion-button {
+    margin-top: 8px;
+  }
+}
+
+.form-actions {
+  margin-top: 24px;
+
+  ion-button {
+    margin-bottom: 12px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .expense-amount {
+    font-size: 1.2rem;
+  }
+
+  .action-buttons {
+    ion-button {
+      font-size: 0.8rem;
+      margin: 2px;
+    }
+  }
+}

@@ -1,0 +1,216 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+   <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Quote Templates</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!isAdding">
+    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search templates..." animated></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Template List -->
+  <div *ngIf="!isAdding" class="templates-container">
+    <ion-card *ngFor="let template of getFilteredTemplates()" class="template-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="8">
+              <h2 class="template-title">{{ template.name }}</h2>
+              <p class="template-currency">{{ template.currency?.code }}</p>
+              <p class="template-items">{{ template.items?.length || 0 }} item(s)</p>
+            </ion-col>
+            <ion-col size="12" size-md="4" class="ion-text-end">
+              <ion-button size="small" fill="outline" (click)="useTemplate(template)">
+                <ion-icon name="document" slot="start"></ion-icon>
+                Use Template
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+          <!-- Items Preview -->
+          <ion-row *ngIf="template.items && template.items.length > 0">
+            <ion-col size="12">
+              <div class="items-preview">
+                <p class="items-label">Items:</p>
+                <ul class="items-list">
+                  <li *ngFor="let item of template.items">
+                    {{ item.description }} ({{ item.quantity }} × {{ item.unit_price | number :'1.2-2'|currency:template.currency.code }})
+                  </li>
+                </ul>
+              </div>
+            </ion-col>
+          </ion-row>
+
+          <!-- Actions -->
+          <ion-row class="action-buttons">
+            <ion-col>
+              <ion-button size="small" fill="outline" (click)="editTemplate(template)">
+                <ion-icon name="create" slot="start"></ion-icon>
+                Edit
+              </ion-button>
+              <ion-button size="small" fill="outline" color="danger" (click)="deleteTemplate(template)">
+                <ion-icon name="trash" slot="start"></ion-icon>
+                Delete
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Add/Edit Template Form -->
+  <div *ngIf="isAdding" class="form-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ editingTemplate ? 'Edit Template' : 'Create Template' }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+          <!-- Template Name -->
+          <ion-item>
+            <ion-label position="floating">Template Name *</ion-label>
+            <ion-input formControlName="name" type="text"></ion-input>
+          </ion-item>
+
+          <!-- Currency -->
+          <ion-item>
+            <ion-label>Currency *</ion-label>
+            <!--Default currency is GHS-->
+            <ion-select formControlName="currency_id" placeholder="Select Currency" >
+              <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
+                {{ currency.name }} ({{ currency.code }})
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Items -->
+          <div formArrayName="items">
+            <h3>Items</h3>
+            <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="item-row">
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="12" size-md="4">
+                    <ion-item>
+                      <ion-label>Select Item (Optional)</ion-label>
+                      <ion-select placeholder="Choose from saved items" (ionChange)="selectItem($event.detail.value, i)">
+                        <ion-select-option *ngFor="let availableItem of availableItems" [value]="availableItem">
+                          {{ availableItem.name }} - {{ availableItem.unit_price | currency:availableItem.user.currency }}
+                        </ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                    <ion-item>
+                      <ion-label position="floating">Description *</ion-label>
+                      <ion-input formControlName="description" type="text"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="6" size-md="2">
+                    <ion-item>
+                      <ion-label position="floating">Qty *</ion-label>
+                      <ion-input formControlName="quantity" type="number" min="1"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="6" size-md="2">
+                    <ion-item>
+                      <ion-label position="floating">Unit Price *</ion-label>
+                      <ion-input formControlName="unit_price" type="number" min="0" step="0.01"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="6" size-md="2">
+                    <ion-item>
+                      <ion-label position="floating">Tax %</ion-label>
+                      <ion-input formControlName="tax_rate" type="number" min="0" max="100" step="0.01"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="6" size-md="2">
+                    <ion-item>
+                      <ion-label position="floating">Discount</ion-label>
+                      <ion-input formControlName="discount" type="number" min="0" step="0.01"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="12" size-md="auto" class="ion-text-center">
+                    <p class="item-total">{{ calculateItemTotal(item.value) | number:'1.2-2' }}</p>
+                    <ion-button *ngIf="items.length > 1" fill="clear" color="danger" (click)="removeItem(i)">
+                      <ion-icon name="trash"></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+
+            <ion-button expand="block" fill="outline" (click)="addItem()">
+              <ion-icon name="add" slot="start"></ion-icon>
+              Add Item
+            </ion-button>
+          </div>
+
+          <!-- Totals Summary -->
+          <ion-card class="totals-card">
+            <ion-card-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Subtotal:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    {{ calculateSubtotal() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Discount:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    -{{ calculateTotalDiscount() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>Tax:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    {{ calculateTotalTax() | number:'1.2-2' }}
+                  </ion-col>
+                </ion-row>
+                <ion-row class="grand-total">
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>TOTAL:</strong>
+                  </ion-col>
+                  <ion-col size="6" class="ion-text-end">
+                    <strong>{{ calculateGrandTotal() | number:'1.2-2' }}</strong>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Notes -->
+          <ion-item>
+            <ion-label position="floating">Notes</ion-label>
+            <ion-textarea formControlName="notes" rows="3"></ion-textarea>
+          </ion-item>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <ion-button expand="block" type="submit" [disabled]="!templateForm.valid">
+              {{ editingTemplate ? 'Update Template' : 'Create Template' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="editingTemplate ? cancelEdit() : cancelAdd()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

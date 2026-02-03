@@ -1,0 +1,107 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Items</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!isAdding && !editingItem">
+    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search items..." animated></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Item List -->
+  <div *ngIf="!isAdding && !editingItem" class="item-container">
+    <ion-card *ngFor="let item of getFilteredItems()" class="item-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="8">
+              <h2 class="item-title">{{ item.name }}</h2>
+              <p class="item-description" *ngIf="item.description">{{ item.description }}</p>
+              <p class="item-price">
+                <ion-icon name="cash"></ion-icon>
+                {{ item.unit_price | number:'1.2-2' }}
+                <span *ngIf="item.tax_rate > 0"> (Tax: {{ item.tax_rate }}%)</span>
+                <span *ngIf="item.discount > 0"> (Discount: {{ item.discount | number:'1.2-2' }})</span>
+              </p>
+            </ion-col>
+            <ion-col size="12" size-md="4" class="ion-text-end">
+              <ion-button size="small" fill="outline" (click)="editItem(item)">
+                <ion-icon name="create" slot="start"></ion-icon>
+                Edit
+              </ion-button>
+              <ion-button size="small" fill="outline" color="danger" (click)="deleteItem(item)">
+                <ion-icon name="trash" slot="start"></ion-icon>
+                Delete
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <div *ngIf="getFilteredItems().length === 0" class="no-items">
+      <ion-icon name="document-outline" size="large" color="medium"></ion-icon>
+      <p>No items found</p>
+    </div>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <ion-card *ngIf="isAdding || editingItem" class="form-card">
+    <ion-card-header>
+      <ion-card-title>{{ editingItem ? 'Edit Item' : 'Add New Item' }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <form [formGroup]="itemForm" (ngSubmit)="editingItem ? updateItem() : createItem()">
+        <!-- Name -->
+        <ion-item>
+          <ion-label position="floating">Name *</ion-label>
+          <ion-input formControlName="name" type="text"></ion-input>
+        </ion-item>
+
+        <!-- Description -->
+        <ion-item>
+          <ion-label position="floating">Description</ion-label>
+          <ion-textarea formControlName="description" rows="3"></ion-textarea>
+        </ion-item>
+
+        <!-- Unit Price -->
+        <ion-item>
+          <ion-label position="floating">Unit Price *</ion-label>
+          <ion-input formControlName="unit_price" type="number" step="0.01"></ion-input>
+        </ion-item>
+
+        <!-- Tax Rate -->
+        <ion-item>
+          <ion-label position="floating">Tax Rate (%)</ion-label>
+          <ion-input formControlName="tax_rate" type="number" step="0.01" min="0" max="100"></ion-input>
+        </ion-item>
+
+        <!-- Discount -->
+        <ion-item>
+          <ion-label position="floating">Discount</ion-label>
+          <ion-input formControlName="discount" type="number" step="0.01" min="0"></ion-input>
+        </ion-item>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <ion-button expand="block" type="submit" [disabled]="!itemForm.valid">
+            {{ editingItem ? 'Update Item' : 'Create Item' }}
+          </ion-button>
+          <ion-button expand="block" fill="outline" (click)="editingItem ? cancelEdit() : cancelAdd()">
+            Cancel
+          </ion-button>
+        </div>
+      </form>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

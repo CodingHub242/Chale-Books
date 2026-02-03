@@ -1,0 +1,148 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+     <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Clients</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="!isAdding && !editingClient">
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange()" placeholder="Search clients..." animated></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Client List -->
+  <div *ngIf="!isAdding && !editingClient" class="clients-container">
+    <ion-card *ngFor="let client of getFilteredClients()" class="client-card">
+      <ion-card-content>
+        <div class="client-header">
+          <div class="client-avatar">
+            {{ client.name?.charAt(0)?.toUpperCase() || 'C' }}
+          </div>
+          <div class="client-info">
+            <h2 class="client-name">
+              <ion-icon name="person"></ion-icon>
+              {{ client.name }}
+            </h2>
+          </div>
+        </div>
+
+        <div class="client-details">
+          <div class="client-detail-item email">
+            <ion-icon name="mail"></ion-icon>
+            <span>{{ client.email }}</span>
+          </div>
+          <div class="client-detail-item phone" *ngIf="client.phone">
+            <ion-icon name="call"></ion-icon>
+            <span>{{ client.phone }}</span>
+          </div>
+          <div class="client-detail-item address" *ngIf="client.address">
+            <ion-icon name="location"></ion-icon>
+            <span>{{ client.address }}</span>
+          </div>
+        </div>
+
+        <div class="client-actions">
+          <ion-button fill="outline" (click)="editClient(client)">
+            <ion-icon name="create" slot="start"></ion-icon>
+            Edit
+          </ion-button>
+          <ion-button color="danger" fill="outline" (click)="deleteClient(client)">
+            <ion-icon name="trash" slot="start"></ion-icon>
+            Delete
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination-container">
+      <ion-grid>
+        <ion-row class="ion-justify-content-center">
+          <ion-col size="12" class="ion-text-center">
+            <div class="pagination-controls">
+              <ion-button
+                fill="outline"
+                [disabled]="currentPage === 1"
+                (click)="previousPage()">
+                <ion-icon name="chevron-back" slot="start"></ion-icon>
+                Previous
+              </ion-button>
+
+              <span class="page-info">
+                Page {{ currentPage }} of {{ totalPages }}
+                ({{ totalClients }} total clients)
+              </span>
+
+              <ion-button
+                fill="outline"
+                [disabled]="currentPage === totalPages"
+                (click)="nextPage()">
+                Next
+                <ion-icon name="chevron-forward" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="getFilteredClients().length === 0" class="empty-state">
+      <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+      <h2>No clients found</h2>
+      <p>Add your first client to start creating quotes and invoices</p>
+      <ion-button (click)="isAdding = true">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Add Client
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Add/Edit Client Form -->
+  <div *ngIf="isAdding || editingClient" class="form-container">
+    <ion-card>
+      <ion-card-content>
+        <h2>{{ editingClient ? 'Edit Client' : 'New Client' }}</h2>
+        
+        <form [formGroup]="clientForm" (ngSubmit)="editingClient ? updateClient() : submitClient()">
+          <ion-item>
+            <ion-label position="floating">Name *</ion-label>
+            <ion-input formControlName="name" placeholder="Enter client name"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Email *</ion-label>
+            <ion-input type="email" formControlName="email" placeholder="client@example.com"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Phone</ion-label>
+            <ion-input type="tel" formControlName="phone" placeholder="+1 234 567 8900"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="floating">Address</ion-label>
+            <ion-input formControlName="address" placeholder="Enter address"></ion-input>
+          </ion-item>
+
+          <div class="form-actions">
+            <ion-button expand="block" type="submit" [disabled]="!clientForm.valid">
+              {{ editingClient ? 'Update Client' : 'Add Client' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="editingClient ? cancelEdit() : cancelAdd()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

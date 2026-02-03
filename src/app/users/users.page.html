@@ -1,0 +1,112 @@
+<ion-header>
+  <ion-toolbar color="primary">
+     <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Users</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openModal()">
+        <ion-icon slot="icon-only" name="person-add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-loading [isOpen]="isLoading" message="Loading..."></ion-loading>
+
+  <div class="users-container">
+    <div class="users-header">
+      <h2>Team Members</h2>
+      <p>Manage your team members and their roles</p>
+    </div>
+
+    <ion-list>
+      <ion-item *ngFor="let user of users" class="user-item">
+        <ion-avatar slot="start">
+          <div class="avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div>
+        </ion-avatar>
+        <ion-label>
+          <h3>{{ user.name }}</h3>
+          <p>{{ user.email }}</p>
+          <ion-chip *ngFor="let role of user.roles" [color]="getRoleColor(role.name)" class="role-chip">
+            {{ getRoleLabel(role.name) }}
+          </ion-chip>
+        </ion-label>
+        <ion-buttons slot="end">
+          <ion-button (click)="openModal(user)" color="primary">
+            <ion-icon name="create"></ion-icon>
+          </ion-button>
+          <ion-button (click)="deleteUser(user)" color="danger" [disabled]="user.id === currentUser?.id">
+            <ion-icon name="trash"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+    </ion-list>
+
+    <div *ngIf="users.length === 0 && !isLoading" class="empty-state">
+      <ion-icon name="people-outline" size="large"></ion-icon>
+      <p>No users found</p>
+      <ion-button (click)="openModal()">Add User</ion-button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <ion-toast
+    [isOpen]="showToast"
+    [message]="toastMessage"
+    [color]="toastColor"
+    duration="3000"
+    (didDismiss)="showToast = false">
+  </ion-toast>
+</ion-content>
+
+<!-- Add/Edit User Modal -->
+<ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()" presenting-element="main-content">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeModal()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>{{ editingUser ? 'Edit User' : 'Add User' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="saveUser()" [disabled]="!formData.name || !formData.email || !formData.role">
+            Save
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <div class="modal-form-container">
+        <ion-item>
+          <ion-label position="stacked">Name *</ion-label>
+          <ion-input [(ngModel)]="formData.name" placeholder="Enter name"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Email *</ion-label>
+          <ion-input [(ngModel)]="formData.email" type="email" placeholder="Enter email"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">{{ editingUser ? 'Password (leave blank to keep current)' : 'Password *' }}</ion-label>
+          <ion-input [(ngModel)]="formData.password" type="password" placeholder="Enter password"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Role *</ion-label>
+          <ion-select [(ngModel)]="formData.role" placeholder="Select role">
+            <ion-select-option *ngFor="let role of roles" [value]="role.name">
+              {{ role.name | titlecase }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

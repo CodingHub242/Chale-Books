@@ -1,0 +1,255 @@
+.reports-container {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.action-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-button {
+    --border-radius: 8px;
+  }
+}
+
+.form-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-card-header {
+    border-bottom: 1px solid var(--ion-color-light-shade);
+  }
+
+  ion-card-title {
+    font-size: 1.2rem;
+    color: var(--ion-color-primary);
+  }
+
+  ion-item {
+    --padding-start: 0;
+    margin-bottom: 16px;
+  }
+
+  ion-button {
+    margin-top: 16px;
+    --border-radius: 8px;
+  }
+}
+
+.filter-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-item {
+    --padding-start: 0;
+  }
+}
+
+.summary-card {
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #073336 0%, #0a4d52 100%);
+  color: white;
+
+  ion-card-header {
+    padding-bottom: 0;
+  }
+
+  ion-card-title {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.summary-row {
+  padding: 16px 0;
+  text-align: center;
+
+  &.profit-row {
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+    margin-top: 16px;
+    padding-top: 24px;
+  }
+}
+
+.summary-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 700;
+
+  &.revenue {
+    color: #2dd36f;
+  }
+
+  &.expense {
+    color: #eb445a;
+  }
+
+  &.profit {
+    color: #2dd36f;
+
+    &.negative {
+      color: #eb445a;
+    }
+  }
+}
+
+.chart-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-card-header {
+    border-bottom: 1px solid var(--ion-color-light-shade);
+  }
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+
+    ion-icon {
+      font-size: 1.3rem;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin: 20px 0;
+
+  canvas {
+    max-height: 300px;
+  }
+}
+
+.data-table {
+  margin-top: 24px;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background-color: var(--ion-color-light);
+      
+      th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--ion-color-dark);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--ion-color-light-shade);
+
+        &:hover {
+          background-color: var(--ion-color-light);
+        }
+
+        td {
+          padding: 12px;
+          font-size: 0.95rem;
+
+          &.text-right {
+            text-align: right;
+            font-weight: 600;
+            color: var(--ion-color-primary);
+          }
+        }
+      }
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 100px;
+    opacity: 0.3;
+    margin-bottom: 24px;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 12px;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+  }
+
+  .chart-container {
+    height: 250px;
+
+    canvas {
+      max-height: 250px;
+    }
+  }
+
+  .data-table {
+    table {
+      font-size: 0.85rem;
+
+      thead th,
+      tbody td {
+        padding: 8px;
+      }
+    }
+  }
+}
+
+// Print Styles
+@media print {
+  ion-header,
+  .filter-card {
+    display: none;
+  }
+
+  .chart-card {
+    page-break-inside: avoid;
+  }
+}

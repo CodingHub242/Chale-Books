@@ -1,0 +1,256 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Reports & Analytics</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="reports-container">
+    <!-- Add Revenue Button -->
+    <ion-card class="action-card">
+      <ion-card-content>
+        <ion-button expand="block" color="primary" (click)="isAddingRevenue = true">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Add Manual Revenue
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Add Revenue Form -->
+    <ion-card *ngIf="isAddingRevenue" class="form-card">
+      <ion-card-header>
+        <ion-card-title>Add Manual Revenue</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="revenueForm" (ngSubmit)="submitRevenue()">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <ion-item>
+                  <ion-label position="floating">Client *</ion-label>
+                  <ion-select formControlName="client_id" placeholder="Select client">
+                    <ion-select-option *ngFor="let client of clients" [value]="client.id">
+                      {{ client.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12" size-md="6">
+                <ion-item>
+                  <ion-label position="floating">Category *</ion-label>
+                  <ion-input formControlName="category" placeholder="e.g., Consulting, Services"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12" size-md="4">
+                <ion-item>
+                  <ion-label position="floating">Amount *</ion-label>
+                  <ion-input type="number" formControlName="amount" min="0" step="0.01"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12" size-md="4">
+                <ion-item>
+                  <ion-label position="floating">Currency *</ion-label>
+                  <ion-select formControlName="currency_id" placeholder="Select currency">
+                    <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
+                      {{ currency.code }} - {{ currency.name }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12" size-md="4">
+                <ion-item>
+                  <ion-label position="floating">Date *</ion-label>
+                  <ion-input type="date" formControlName="revenue_date"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <ion-item>
+                  <ion-label position="floating">Description</ion-label>
+                  <ion-textarea formControlName="description" rows="3" placeholder="Optional description"></ion-textarea>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <ion-button expand="block" type="submit" [disabled]="!revenueForm.valid">
+                  <ion-icon name="checkmark" slot="start"></ion-icon>
+                  Add Revenue
+                </ion-button>
+                <ion-button expand="block" fill="outline" (click)="cancelAddRevenue()">
+                  <ion-icon name="close" slot="start"></ion-icon>
+                  Cancel
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Date Range Filter -->
+    <ion-card class="filter-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row class="ion-align-items-end">
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                <ion-label position="floating">Start Date</ion-label>
+                <ion-input type="date" [(ngModel)]="startDate"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                <ion-label position="floating">End Date</ion-label>
+                <ion-input type="date" [(ngModel)]="endDate"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="4">
+              <ion-button expand="block" (click)="applyFilters()">
+                <ion-icon name="bar-chart" slot="start"></ion-icon>
+                Apply Filters
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Profit & Loss Summary -->
+    <ion-card class="summary-card" *ngIf="profitLossData">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="trending-up"></ion-icon>
+          Profit & Loss Statement
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row class="summary-row">
+            <ion-col size="6">
+              <div class="summary-label">Total Revenue</div>
+              <div class="summary-value revenue">{{ profitLossData.revenue | currency:profitLossData.currency }}</div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="summary-label">Total Expenses</div>
+              <div class="summary-value expense">{{ profitLossData.expenses | currency:profitLossData.currency }}</div>
+            </ion-col>
+          </ion-row>
+          <ion-row class="summary-row profit-row">
+            <ion-col size="12">
+              <div class="summary-label">Net Profit</div>
+              <div class="summary-value profit" [class.negative]="profitLossData.profit < 0">
+                {{ profitLossData.profit | currency:profitLossData.currency }}
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Monthly Trend Chart -->
+    <ion-card class="chart-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="bar-chart"></ion-icon>
+          Monthly Trend
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="chart-container">
+          <canvas id="monthlyTrendChart"></canvas>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Revenue & Expenses Charts -->
+    <ion-grid>
+      <ion-row>
+        <!-- Revenue by Client -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="bar-chart"></ion-icon>
+                Revenue by Client
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas id="revenueByClientChart"></canvas>
+              </div>
+              
+              <!-- Data Table -->
+              <div class="data-table" *ngIf="revenueByClientData.length > 0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Client</th>
+                      <th class="text-right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of revenueByClientData">
+                      <td>{{ item.client }}</td>
+                      <td class="text-right">{{ item.total | currency:item.currency }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Expenses by Category -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="pie-chart"></ion-icon>
+                Expenses by Category
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas id="expensesByCategoryChart"></canvas>
+              </div>
+              
+              <!-- Data Table -->
+              <div class="data-table" *ngIf="expensesByCategoryData.length > 0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th class="text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of expensesByCategoryData">
+                      <td>{{ item.category }}</td>
+                      <td class="text-right">{{ item.total | currency:item.currency }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Empty State -->
+    <div *ngIf="!profitLossData && !monthlyTrendData.length" class="empty-state">
+      <ion-icon name="bar-chart-outline" class="empty-icon"></ion-icon>
+      <h2>No data available</h2>
+      <p>Create some invoices and expenses to see reports</p>
+    </div>
+  </div>
+</ion-content>

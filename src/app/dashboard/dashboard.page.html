@@ -1,0 +1,622 @@
+<ion-menu contentId="main-content" when="(min-width: 800px)">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Chale Books</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <!-- User Profile Section -->
+    <div class="user-profile">
+      <ion-avatar>
+        <div class="avatar-placeholder">{{ user?.name?.charAt(0) || 'U' }}</div>
+      </ion-avatar>
+      <h3>{{ user?.name }}</h3>
+      <p>{{ user?.email }}</p>
+    </div>
+
+    <!-- Navigation Menu -->
+    <ion-list>
+      <ion-item button routerLink="/dashboard" routerLinkActive="active" detail="false">
+        <ion-icon name="home" slot="start"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/clients" routerLinkActive="active" detail="false">
+        <ion-icon name="people" slot="start"></ion-icon>
+        <ion-label>Clients</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/quotes" routerLinkActive="active" detail="false">
+        <ion-icon name="clipboard" slot="start"></ion-icon>
+        <ion-label>Quotes</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/items" routerLinkActive="active" detail="false">
+        <ion-icon name="cube" slot="start"></ion-icon>
+        <ion-label>Items</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/quote-templates" routerLinkActive="active" detail="false">
+        <ion-icon name="document-text" slot="start"></ion-icon>
+        <ion-label>Quote Templates</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/invoices" routerLinkActive="active" detail="false">
+        <ion-icon name="document" slot="start"></ion-icon>
+        <ion-label>Invoices</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/expenses" routerLinkActive="active" detail="false">
+        <ion-icon name="cash" slot="start"></ion-icon>
+        <ion-label>Expenses</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/reports" routerLinkActive="active" detail="false">
+        <ion-icon name="bar-chart" slot="start"></ion-icon>
+        <ion-label>Reports</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/users" routerLinkActive="active" detail="false">
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        <ion-label>Users</ion-label>
+      </ion-item>
+      <ion-item button (click)="logout()" detail="false">
+        <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
+        <ion-label color="danger">Logout</ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+    <!--Display Logged User's name-->
+    <div class="user-profile" slot="end" style="padding:7px 14px;margin-bottom:0px;">
+      <ion-avatar style="width:60px;height:60px;">
+        <div class="avatar-placeholder">{{ user?.name?.charAt(0) || 'U' }}</div>
+      </ion-avatar>
+      <!-- <h3>{{ user?.name }}</h3>
+      <p>{{ user?.email }}</p> -->
+    </div>
+    <!-- <ion-buttons slot="end">
+      <ion-button routerLink="/quotes">
+        <ion-icon name="clipboard" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button routerLink="/invoices">
+        <ion-icon name="document" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content id="main-content" [fullscreen]="true">
+  <ion-row>
+    <ion-col size="2">
+       <ion-list class="webscreen" style="background: #073336;height: 100vh;">
+      <ion-item button routerLink="/dashboard" routerLinkActive="active" detail="false">
+        <ion-icon name="home" slot="start"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/clients" routerLinkActive="active" detail="false">
+        <ion-icon name="people" slot="start"></ion-icon>
+        <ion-label>Clients</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/quotes" routerLinkActive="active" detail="false">
+        <ion-icon name="clipboard" slot="start"></ion-icon>
+        <ion-label>Quotes</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/items" routerLinkActive="active" detail="false">
+        <ion-icon name="cube" slot="start"></ion-icon>
+        <ion-label>Items</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/quote-templates" routerLinkActive="active" detail="false">
+        <ion-icon name="document-text" slot="start"></ion-icon>
+        <ion-label>Quote Templates</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/invoices" routerLinkActive="active" detail="false">
+        <ion-icon name="document" slot="start"></ion-icon>
+        <ion-label>Invoices</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/expenses" routerLinkActive="active" detail="false">
+        <ion-icon name="cash" slot="start"></ion-icon>
+        <ion-label>Expenses</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/reports" routerLinkActive="active" detail="false">
+        <ion-icon name="bar-chart" slot="start"></ion-icon>
+        <ion-label>Reports</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/users" routerLinkActive="active" detail="false">
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        <ion-label>Users</ion-label>
+      </ion-item>
+      <ion-item button (click)="logout()" detail="false">
+        <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
+        <ion-label color="danger">Logout</ion-label>
+      </ion-item>
+    </ion-list>
+    </ion-col>
+
+    <ion-col class="minor" size="10" when="(min-width: 800px)">
+      <div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h1>Welcome back, {{ user?.name?.split(' ')[0] || 'User' }}!</h1>
+      <p>Here's what's happening with your business today</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <ion-grid>
+      <ion-row>
+        <!-- Total Revenue -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card revenue-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="trending-up"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Total Revenue</p>
+                <h2 class="stat-value">{{ totalRevenue | currency:defaultCurrency }}</h2>
+                <p class="stat-subtitle">From paid invoices</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Total Expenses -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card expense-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="trending-down"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Total Expenses</p>
+                <h2 class="stat-value">{{ totalExpenses | currency:defaultCurrency }}</h2>
+                <p class="stat-subtitle">All time expenses</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Net Profit -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card profit-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="wallet-outline"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Net Profit</p>
+                <h2 class="stat-value" [class.negative]="netProfit < 0">
+                  {{ netProfit | currency:defaultCurrency }}
+                </h2>
+                <p class="stat-subtitle">Revenue - Expenses</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Pending Quotes -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card quotes-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="time-outline"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Pending Quotes</p>
+                <h2 class="stat-value">{{ pendingQuotes }}</h2>
+                <p class="stat-subtitle">Awaiting response</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Alerts Row -->
+      <ion-row *ngIf="unpaidInvoices > 0 || overdueInvoices > 0">
+        <ion-col size="12" size-md="6" *ngIf="unpaidInvoices > 0">
+          <ion-card class="alert-card warning-card">
+            <ion-card-content>
+              <ion-icon name="alert-circle" color="warning"></ion-icon>
+              <div class="alert-content">
+                <h3>{{ unpaidInvoices }} Unpaid Invoice{{ unpaidInvoices > 1 ? 's' : '' }}</h3>
+                <p>Requires attention</p>
+              </div>
+              <ion-button fill="clear" routerLink="/invoices">View</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="6" *ngIf="overdueInvoices > 0">
+          <ion-card class="alert-card danger-card">
+            <ion-card-content>
+              <ion-icon name="alert-circle" color="danger"></ion-icon>
+              <div class="alert-content">
+                <h3>{{ overdueInvoices }} Overdue Invoice{{ overdueInvoices > 1 ? 's' : '' }}</h3>
+                <p>Immediate action required</p>
+              </div>
+              <ion-button fill="clear" routerLink="/invoices">View</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Recent Activity -->
+      <ion-row>
+        <!-- Recent Invoices -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="activity-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="document"></ion-icon>
+                Recent Invoices
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="recentInvoices.length > 0">
+                <ion-item *ngFor="let invoice of recentInvoices" routerLink="/invoices">
+                  <ion-label>
+                    <h3>{{ invoice.invoice_number || 'INV-' + invoice.id }}</h3>
+                    <p>{{ invoice.client?.name }} - {{ invoice.total || invoice.amount | currency:defaultCurrency }}</p>
+                  </ion-label>
+                  <ion-badge [color]="getStatusColor(invoice.status)" slot="end">
+                    {{ invoice.status }}
+                  </ion-badge>
+                </ion-item>
+              </ion-list>
+              <div *ngIf="recentInvoices.length === 0" class="empty-message">
+                <p>No invoices yet</p>
+                <ion-button size="small" routerLink="/invoices">Create Invoice</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Recent Quotes -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="activity-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="clipboard"></ion-icon>
+                Recent Quotes
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="recentQuotes.length > 0">
+                <ion-item *ngFor="let quote of recentQuotes" (click)="previewPdf(quote)">
+                  <ion-label>
+                    <h3>Quote #{{ quote.id }}</h3>
+                    <p>{{ quote.client?.name }} - {{ quote.total || quote.amount | currency:defaultCurrency }}</p>
+                  </ion-label>
+                  <ion-badge [color]="getStatusColor(quote.status)" slot="end">
+                    {{ quote.status }}
+                  </ion-badge>
+                </ion-item>
+              </ion-list>
+              <div *ngIf="recentQuotes.length === 0" class="empty-message">
+                <p>No quotes yet</p>
+                <ion-button size="small" routerLink="/quotes">Create Quote</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Recent Expenses -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card class="activity-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="cash"></ion-icon>
+                Recent Expenses
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="recentExpenses.length > 0">
+                <ion-item *ngFor="let expense of recentExpenses" routerLink="/expenses">
+                  <ion-label>
+                    <h3>{{ expense.category }}</h3>
+                    <p>{{ expense.expense_date }} - {{ expense.description }}</p>
+                  </ion-label>
+                  <ion-label slot="end" class="ion-text-end">
+                    <h3 class="expense-amount">{{ expense.amount | currency:defaultCurrency }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+              <div *ngIf="recentExpenses.length === 0" class="empty-message">
+                <p>No expenses yet</p>
+                <ion-button size="small" routerLink="/expenses">Add Expense</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Quick Actions -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card class="quick-actions-card">
+            <ion-card-header>
+              <ion-card-title>Quick Actions</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/quotes">
+                      <ion-icon name="clipboard" slot="start"></ion-icon>
+                      New Quote
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/invoices">
+                      <ion-icon name="document" slot="start"></ion-icon>
+                      New Invoice
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/expenses">
+                      <ion-icon name="cash" slot="start"></ion-icon>
+                      Add Expense
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/clients">
+                      <ion-icon name="people" slot="start"></ion-icon>
+                      Add Client
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+      </div>
+    </ion-col>
+
+     <ion-col class="major" size="12" when="(max-width: 800px)">
+      <div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h1>Welcome back, {{ user?.name?.split(' ')[0] || 'User' }}!</h1>
+      <p>Here's what's happening with your business today</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <ion-grid>
+      <ion-row>
+        <!-- Total Revenue -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card revenue-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="trending-up"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Total Revenue</p>
+                <h2 class="stat-value">{{ totalRevenue | currency:defaultCurrency }}</h2>
+                <p class="stat-subtitle">From paid invoices</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Total Expenses -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card expense-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="trending-down"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Total Expenses</p>
+                <h2 class="stat-value">{{ totalExpenses | currency:defaultCurrency }}</h2>
+                <p class="stat-subtitle">All time expenses</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Net Profit -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card profit-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="wallet-outline"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Net Profit</p>
+                <h2 class="stat-value" [class.negative]="netProfit < 0">
+                  {{ netProfit | currency:defaultCurrency }}
+                </h2>
+                <p class="stat-subtitle">Revenue - Expenses</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Pending Quotes -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card quotes-card">
+            <ion-card-content>
+              <div class="stat-icon">
+                <ion-icon name="time-outline"></ion-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Pending Quotes</p>
+                <h2 class="stat-value">{{ pendingQuotes }}</h2>
+                <p class="stat-subtitle">Awaiting response</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Alerts Row -->
+      <ion-row *ngIf="unpaidInvoices > 0 || overdueInvoices > 0">
+        <ion-col size="12" size-md="6" *ngIf="unpaidInvoices > 0">
+          <ion-card class="alert-card warning-card">
+            <ion-card-content>
+              <ion-icon name="alert-circle" color="warning"></ion-icon>
+              <div class="alert-content">
+                <h3>{{ unpaidInvoices }} Unpaid Invoice{{ unpaidInvoices > 1 ? 's' : '' }}</h3>
+                <p>Requires attention</p>
+              </div>
+              <ion-button fill="clear" routerLink="/invoices">View</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="6" *ngIf="overdueInvoices > 0">
+          <ion-card class="alert-card danger-card">
+            <ion-card-content>
+              <ion-icon name="alert-circle" color="danger"></ion-icon>
+              <div class="alert-content">
+                <h3>{{ overdueInvoices }} Overdue Invoice{{ overdueInvoices > 1 ? 's' : '' }}</h3>
+                <p>Immediate action required</p>
+              </div>
+              <ion-button fill="clear" routerLink="/invoices">View</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Recent Activity -->
+      <ion-row>
+        <!-- Recent Invoices -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="activity-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="document"></ion-icon>
+                Recent Invoices
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="recentInvoices.length > 0">
+                <ion-item *ngFor="let invoice of recentInvoices" routerLink="/invoices">
+                  <ion-label>
+                    <h3>{{ invoice.invoice_number || 'INV-' + invoice.id }}</h3>
+                    <p>{{ invoice.client?.name }} - {{ invoice.total || invoice.amount | currency:defaultCurrency }}</p>
+                  </ion-label>
+                  <ion-badge [color]="getStatusColor(invoice.status)" slot="end">
+                    {{ invoice.status }}
+                  </ion-badge>
+                </ion-item>
+              </ion-list>
+              <div *ngIf="recentInvoices.length === 0" class="empty-message">
+                <p>No invoices yet</p>
+                <ion-button size="small" routerLink="/invoices">Create Invoice</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Recent Quotes -->
+        <ion-col size="12" size-lg="6">
+          <ion-card class="activity-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="clipboard"></ion-icon>
+                Recent Quotes
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="recentQuotes.length > 0">
+                <ion-item *ngFor="let quote of recentQuotes" (click)="previewPdf(quote)">
+                  <ion-label>
+                    <h3>Quote #{{ quote.id }}</h3>
+                    <p>{{ quote.client?.name }} - {{ quote.total || quote.amount | currency:defaultCurrency }}</p>
+                  </ion-label>
+                  <ion-badge [color]="getStatusColor(quote.status)" slot="end">
+                    {{ quote.status }}
+                  </ion-badge>
+                </ion-item>
+              </ion-list>
+              <div *ngIf="recentQuotes.length === 0" class="empty-message">
+                <p>No quotes yet</p>
+                <ion-button size="small" routerLink="/quotes">Create Quote</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Recent Expenses -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card class="activity-card">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="cash"></ion-icon>
+                Recent Expenses
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list *ngIf="recentExpenses.length > 0">
+                <ion-item *ngFor="let expense of recentExpenses" routerLink="/expenses">
+                  <ion-label>
+                    <h3>{{ expense.category }}</h3>
+                    <p>{{ expense.expense_date }} - {{ expense.description }}</p>
+                  </ion-label>
+                  <ion-label slot="end" class="ion-text-end">
+                    <h3 class="expense-amount">{{ expense.amount | currency:defaultCurrency }}</h3>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+              <div *ngIf="recentExpenses.length === 0" class="empty-message">
+                <p>No expenses yet</p>
+                <ion-button size="small" routerLink="/expenses">Add Expense</ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+
+      <!-- Quick Actions -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card class="quick-actions-card">
+            <ion-card-header>
+              <ion-card-title>Quick Actions</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/quotes">
+                      <ion-icon name="clipboard" slot="start"></ion-icon>
+                      New Quote
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/invoices">
+                      <ion-icon name="document" slot="start"></ion-icon>
+                      New Invoice
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/expenses">
+                      <ion-icon name="cash" slot="start"></ion-icon>
+                      Add Expense
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="6" size-md="3">
+                    <ion-button expand="block" routerLink="/clients">
+                      <ion-icon name="people" slot="start"></ion-icon>
+                      Add Client
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+      </div>
+    </ion-col>
+  </ion-row>
+  
+</ion-content>
