@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://backend.test/api'
+  apiUrl: 'https://chalebooks.codepps.online/api'
 };
 
 /*
