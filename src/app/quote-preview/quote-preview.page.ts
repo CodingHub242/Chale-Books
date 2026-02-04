@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { addIcons } from 'ionicons';
-import { arrowBack, send, mail } from 'ionicons/icons';
+import { arrowBack, send, mail, document } from 'ionicons/icons';
 
 @Component({
   selector: 'app-quote-preview',
@@ -42,7 +42,7 @@ export class QuotePreviewPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ arrowBack, send, mail });
+    addIcons({ arrowBack, send, mail,document });
     this.initForm();
   }
 
@@ -76,9 +76,9 @@ export class QuotePreviewPage implements OnInit, OnDestroy {
 
   async loadQuote() {
     const loading = await this.presentLoading('Loading quote...');
-    this.api.getQuotes().subscribe({
+    this.api.getQuote(this.quoteId).subscribe({
       next: (data: any) => {
-        this.quote = data.find((q: any) => q.id === this.quoteId);
+        this.quote = data;
         if (this.quote) {
           // Pre-fill email subject
           this.emailForm.patchValue({
@@ -130,6 +130,47 @@ export class QuotePreviewPage implements OnInit, OnDestroy {
     } else {
       await this.presentToast('Please fill all required fields', 'warning');
     }
+  }
+
+  formatExpiryDate(dateString: string): string {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+    // Check if the date has expired
+    if (date < today) {
+      return 'Expired';
+    }
+
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+
+    // Add ordinal suffix to day
+    const getOrdinalSuffix = (day: number): string => {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+
+    return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`;
+  }
+
+  getStatusColor(status: string): string {
+    const colors: any = {
+      'draft': 'medium',
+      'sent': 'primary',
+      'accepted': 'success',
+      'rejected': 'danger',
+      'converted': 'warning'
+    };
+    return colors[status] || 'medium';
   }
 
   goBack() {

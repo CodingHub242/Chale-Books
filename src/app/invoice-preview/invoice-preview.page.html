@@ -10,83 +10,123 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid *ngIf="invoice" style="height: 100%;">
-    <ion-row style="height: 100%;">
+  <div *ngIf="invoice" class="preview-container">
+    <div class="preview-grid">
       <!-- PDF Preview Section -->
-      <ion-col size="12" size-lg="8" style="height: 100%;">
-        <ion-card style="height: 100%; margin: 0;">
-          <ion-card-content style="height: 100%; padding: 0;">
-            <div *ngIf="pdfUrl" style="height: 100%; width: 100%;">
-              <iframe [src]="pdfUrl" style="width: 100%; height: 100%; border: none;"></iframe>
+      <div class="pdf-section">
+        <div class="pdf-header">
+          <div class="pdf-icon">
+            <ion-icon name="document"></ion-icon>
+          </div>
+          <div class="pdf-info">
+            <h3>Invoice Preview</h3>
+            <p>Invoice #{{ invoice.invoice_number || invoice.id }}</p>
+          </div>
+        </div>
+        <div class="pdf-content">
+          <div *ngIf="pdfUrl" class="pdf-iframe-container">
+            <iframe [src]="pdfUrl" class="pdf-iframe"></iframe>
+          </div>
+          <div *ngIf="!pdfUrl" class="pdf-loading">
+            <div class="loading-content">
+              <ion-icon name="document-outline"></ion-icon>
+              <p>Loading PDF...</p>
             </div>
-            <div *ngIf="!pdfUrl" style="display: flex; align-items: center; justify-content: center; height: 100%;">
-              <ion-icon name="document-outline" size="large" color="medium"></ion-icon>
-              <p style="margin-left: 10px;">Loading PDF...</p>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
+          </div>
+        </div>
+      </div>
 
       <!-- Email Composition Section -->
-      <ion-col size="12" size-lg="4" style="height: 100%;">
-        <ion-card style="height: 100%; margin: 0;">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon name="mail" slot="start"></ion-icon>
-              Send Invoice
-            </ion-card-title>
-          </ion-card-header>
-          <ion-card-content style="height: calc(100% - 60px); overflow-y: auto;">
-            <form [formGroup]="emailForm" (ngSubmit)="sendInvoice()">
-              <!-- Email Subject -->
-              <ion-item>
-                <ion-label position="floating">Subject *</ion-label>
-                <ion-input formControlName="subject" type="text"></ion-input>
-              </ion-item>
+      <div class="email-section">
+        <div class="email-header">
+          <div class="email-icon">
+            <ion-icon name="mail"></ion-icon>
+          </div>
+          <div class="email-info">
+            <h3>Send Invoice</h3>
+            <p>Compose and send your invoice</p>
+          </div>
+        </div>
 
-              <!-- Email Message -->
-              <ion-item>
+        <div class="email-content">
+          <form [formGroup]="emailForm" (ngSubmit)="sendInvoice()" class="email-form">
+            <!-- Email Subject -->
+            <div class="form-group">
+              <ion-item class="form-item">
+                <ion-label position="floating">Subject *</ion-label>
+                <ion-input formControlName="subject" type="text" class="form-input"></ion-input>
+              </ion-item>
+            </div>
+
+            <!-- Email Message -->
+            <div class="form-group">
+              <ion-item class="form-item">
                 <ion-label position="floating">Message *</ion-label>
                 <ion-textarea
                   formControlName="message"
                   rows="8"
-                  placeholder="Enter your message here...">
+                  placeholder="Enter your message here..."
+                  class="form-textarea">
                 </ion-textarea>
               </ion-item>
+            </div>
 
-              <!-- Invoice Details Summary -->
-              <ion-card *ngIf="invoice" style="margin: 16px 0;">
-                <ion-card-header>
-                  <ion-card-title style="font-size: 16px;">Invoice Details</ion-card-title>
-                </ion-card-header>
-                <ion-card-content>
-                  <p><strong>Invoice #:</strong> {{ invoice.invoice_number || invoice.id }}</p>
-                  <p><strong>Client:</strong> {{ invoice.client?.name }}</p>
-                  <p><strong>Amount:</strong> {{ invoice.total || invoice.amount | number:'1.2-2' }} {{ invoice.currency?.code }}</p>
-                  <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
-                  <p><strong>Status:</strong> {{ invoice.status | uppercase }}</p>
-                </ion-card-content>
-              </ion-card>
+            <!-- Invoice Details Summary -->
+            <div class="invoice-summary" *ngIf="invoice">
+              <div class="summary-header">
+                <ion-icon name="information-circle"></ion-icon>
+                <h4>Invoice Details</h4>
+              </div>
+              <div class="summary-content">
+                <div class="summary-item">
+                  <span class="label">Invoice #:</span>
+                  <span class="value">{{ invoice.invoice_number || invoice.id }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Client:</span>
+                  <span class="value">{{ invoice.client?.name }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Amount:</span>
+                  <span class="value amount">{{ invoice.total || invoice.amount | number:'1.2-2' }} {{ invoice.currency?.code }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Due Date:</span>
+                  <span class="value">{{ formatDueDate(invoice.due_date) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Status:</span>
+                  <span class="value">
+                    <ion-badge [color]="getStatusColor(invoice.status)">
+                      {{ invoice.status | uppercase }}
+                    </ion-badge>
+                  </span>
+                </div>
+              </div>
+            </div>
 
-              <!-- Send Button -->
+            <!-- Send Button -->
+            <div class="form-actions">
               <ion-button
                 expand="block"
                 type="submit"
                 [disabled]="!emailForm.valid"
-                style="margin-top: 16px;">
+                class="send-button">
                 <ion-icon name="send" slot="start"></ion-icon>
                 Send Invoice
               </ion-button>
-            </form>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Loading State -->
-  <div *ngIf="!invoice" style="display: flex; align-items: center; justify-content: center; height: 100%;">
-    <ion-icon name="document-outline" size="large" color="medium"></ion-icon>
-    <p style="margin-left: 10px;">Loading invoice...</p>
+  <div *ngIf="!invoice" class="loading-state">
+    <div class="loading-content">
+      <ion-icon name="document-outline"></ion-icon>
+      <p>Loading invoice...</p>
+    </div>
   </div>
 </ion-content>

@@ -18,6 +18,7 @@ export class LoginPage implements OnInit {
   isToastOpen = false;
   toastMessage = '';
   isLoading = false;
+  apiResponse: string = '';
 
   constructor(private auth: Auth, private router: Router) { }
 
@@ -37,8 +38,13 @@ export class LoginPage implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.toastMessage = 'Login failed';
+        this.apiResponse = error.message || 'Login failed. Please try again.';
+        this.toastMessage = error.message || 'Login failed. Please try again.';
         this.isToastOpen = true;
+
+        setTimeout(() => {
+          this.apiResponse = '';
+        }, 3000);
       }
     });
   }

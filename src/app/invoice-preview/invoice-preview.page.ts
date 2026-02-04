@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { addIcons } from 'ionicons';
-import { arrowBack, send, mail } from 'ionicons/icons';
+import { arrowBack, send, mail, document } from 'ionicons/icons';
 
 @Component({
   selector: 'app-invoice-preview',
@@ -42,7 +42,7 @@ export class InvoicePreviewPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ arrowBack, send, mail });
+    addIcons({ arrowBack, send, mail,document });
     this.initForm();
   }
 
@@ -76,9 +76,9 @@ export class InvoicePreviewPage implements OnInit, OnDestroy {
 
   async loadInvoice() {
     const loading = await this.presentLoading('Loading invoice...');
-    this.api.getInvoices().subscribe({
+    this.api.getInvoice(this.invoiceId).subscribe({
       next: (data: any) => {
-        this.invoice = data.find((inv: any) => inv.id === this.invoiceId);
+        this.invoice = data;
         if (this.invoice) {
           // Pre-fill email subject
           this.emailForm.patchValue({
@@ -130,6 +130,47 @@ export class InvoicePreviewPage implements OnInit, OnDestroy {
     } else {
       await this.presentToast('Please fill all required fields', 'warning');
     }
+  }
+
+  formatDueDate(dateString: string): string {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+    // Check if the date has passed (overdue)
+    if (date < today) {
+      return 'Overdue';
+    }
+
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+
+    // Add ordinal suffix to day
+    const getOrdinalSuffix = (day: number): string => {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+
+    return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`;
+  }
+
+  getStatusColor(status: string): string {
+    const colors: any = {
+      'draft': 'medium',
+      'sent': 'primary',
+      'paid': 'success',
+      'overdue': 'danger',
+      'cancelled': 'warning'
+    };
+    return colors[status] || 'medium';
   }
 
   goBack() {

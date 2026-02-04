@@ -1,22 +1,166 @@
-.quote-preview-container {
+// Professional Quote Preview Styling
+.preview-container {
   height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 20px;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  height: calc(100vh - 140px);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+// PDF Section Styling
+.pdf-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.pdf-section {
-  flex: 1;
-  background: #f5f5f5;
-  border-radius: 8px;
-  margin: 16px;
-  overflow: hidden;
+.pdf-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.pdf-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.pdf-info {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+}
+
+.pdf-content {
+  flex: 1;
+  position: relative;
+}
+
+.pdf-iframe-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0 0 16px 16px;
+}
+
+.pdf-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 0 0 16px 16px;
+}
+
+.loading-content {
+  text-align: center;
+  color: #5f6368;
+
+  ion-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// Email Section Styling
 .email-section {
-  width: 400px;
   background: white;
-  border-left: 1px solid #e0e0e0;
-  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.email-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #073336 0%, #073336c4 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.email-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.email-info {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+}
+
+.email-content {
+  flex: 1;
+  padding: 24px;
   overflow-y: auto;
 }
 
@@ -26,33 +170,267 @@
   flex-direction: column;
 }
 
-.quote-summary {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 16px 0;
-}
-
-.send-button {
-  margin-top: auto;
+.form-group {
   margin-bottom: 20px;
 }
 
-// Responsive design
+.form-item {
+  --border-radius: 12px;
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  --border-color: #e1e5e9;
+  --background: #f8f9fa;
+  --color: #1a1a1a;
+
+  ion-label {
+    --color: #37474f;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  ion-input, ion-textarea {
+    --color: #1a1a1a;
+    --placeholder-color: #9e9e9e;
+    font-size: 1rem;
+  }
+}
+
+.form-input, .form-textarea {
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+// Quote Summary Styling
+.quote-summary {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin: 24px 0;
+  overflow: hidden;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  ion-icon {
+    font-size: 20px;
+    margin-right: 12px;
+  }
+
+  h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.summary-content {
+  padding: 20px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-weight: 600;
+    color: #37474f;
+    font-size: 0.9rem;
+  }
+
+  .value {
+    color: #1a1a1a;
+    font-weight: 500;
+    text-align: right;
+
+    &.amount {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ion-color-success);
+    }
+
+    ion-badge {
+      padding: 6px 12px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      border-radius: 16px;
+    }
+  }
+}
+
+// Form Actions
+.form-actions {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.send-button {
+  --border-radius: 12px;
+  --padding-start: 20px;
+  --padding-end: 20px;
+  font-weight: 600;
+  text-transform: none;
+  min-height: 48px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+
+  &:hover {
+    --box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  &[disabled] {
+    opacity: 0.6;
+    --box-shadow: none;
+  }
+}
+
+// Loading State
+.loading-state {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.loading-content {
+  text-align: center;
+  color: #5f6368;
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  ion-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.6;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// Header styling
+ion-header {
+  ion-toolbar {
+    --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+    --color: white;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  ion-title {
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
+
+  ion-button {
+    --color: white;
+
+    &:hover {
+      --background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .preview-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    height: auto;
+  }
+
+  .pdf-section, .email-section {
+    height: 60vh;
+  }
+}
+
 @media (max-width: 768px) {
-  .quote-preview-container {
+  .preview-container {
+    padding: 16px;
+  }
+
+  .preview-grid {
+    gap: 16px;
+  }
+
+  .pdf-section, .email-section {
+    height: 50vh;
+  }
+
+  .pdf-header, .email-header {
+    padding: 16px 20px;
+
+    .pdf-icon, .email-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+    }
+
+    p {
+      font-size: 0.85rem;
+    }
+  }
+
+  .email-content {
+    padding: 20px;
+  }
+
+  .summary-content {
+    padding: 16px;
+  }
+
+  .form-actions {
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .preview-container {
+    padding: 12px;
+  }
+
+  .pdf-section, .email-section {
+    height: 45vh;
+  }
+
+  .pdf-header, .email-header {
+    padding: 12px 16px;
+  }
+
+  .email-content {
+    padding: 16px;
+  }
+
+  .summary-item {
     flex-direction: column;
-  }
+    align-items: flex-start;
+    gap: 4px;
 
-  .email-section {
-    width: 100%;
-    border-left: none;
-    border-top: 1px solid #e0e0e0;
-    max-height: 50vh;
-  }
-
-  .pdf-section {
-    flex: 1;
-    max-height: 50vh;
+    .value {
+      text-align: left;
+    }
   }
 }

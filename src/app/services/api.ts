@@ -77,8 +77,17 @@ export class Api {
   }
 
   // Invoices
-  getInvoices(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/invoices`, { headers: this.getHeaders() })
+  getInvoices(page: number = 1, perPage: number = 10, search?: string): Observable<any> {
+    let params = `?page=${page}&per_page=${perPage}`;
+    if (search) {
+      params += `&search=${encodeURIComponent(search)}`;
+    }
+    return this.http.get(`${this.baseUrl}/invoices${params}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  getInvoice(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/invoices/${id}`, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
 
@@ -144,6 +153,11 @@ export class Api {
       params += `&search=${encodeURIComponent(search)}`;
     }
     return this.http.get(`${this.baseUrl}/quotes${params}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  getQuote(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/quotes/${id}`, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
 
