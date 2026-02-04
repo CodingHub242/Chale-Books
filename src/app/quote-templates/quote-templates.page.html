@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-   <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-button (click)="goBack()">
         <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
       </ion-button>
@@ -12,61 +12,124 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!isAdding">
-    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search templates..." animated></ion-searchbar>
+
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedTemplates.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedTemplates.length }} template(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkDelete()" color="danger">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="!isAdding && selectedTemplates.length === 0" class="filters-toolbar">
+    <ion-grid class="filters-grid">
+      <ion-row class="filters-row">
+        <ion-col size="12" size-md="8">
+          <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search templates..." animated class="search-bar" (ionInput)="onSearch($event)"></ion-searchbar>
+        </ion-col>
+        <ion-col size="12" size-md="4" class="ion-text-end">
+          <ion-button fill="clear" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Clear Filters
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Template List -->
+  <!-- Template Table -->
   <div *ngIf="!isAdding" class="templates-container">
-    <ion-card *ngFor="let template of getFilteredTemplates()" class="template-card">
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="8">
-              <h2 class="template-title">{{ template.name }}</h2>
-              <p class="template-currency">{{ template.currency?.code }}</p>
-              <p class="template-items">{{ template.items?.length || 0 }} item(s)</p>
-            </ion-col>
-            <ion-col size="12" size-md="4" class="ion-text-end">
-              <ion-button size="small" fill="outline" (click)="useTemplate(template)">
-                <ion-icon name="document" slot="start"></ion-icon>
-                Use Template
-              </ion-button>
-            </ion-col>
-          </ion-row>
-
-          <!-- Items Preview -->
-          <ion-row *ngIf="template.items && template.items.length > 0">
-            <ion-col size="12">
-              <div class="items-preview">
-                <p class="items-label">Items:</p>
-                <ul class="items-list">
-                  <li *ngFor="let item of template.items">
-                    {{ item.description }} ({{ item.quantity }} × {{ item.unit_price | number :'1.2-2'|currency:template.currency.code }})
-                  </li>
-                </ul>
+    <div class="table-responsive">
+      <table class="templates-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('name')" class="sortable">
+              Name
+              <ion-icon *ngIf="sortField === 'name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Currency</th>
+            <th>Items Count</th>
+            <th (click)="sortBy('total')" class="sortable">
+              Total
+              <ion-icon *ngIf="sortField === 'total'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let template of getFilteredTemplates()"
+              [class.selected]="isSelected(template)"
+              (click)="onRowClick(template, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox
+                [checked]="isSelected(template)"
+                (ionChange)="toggleSelect(template, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable" (click)="editTemplate(template)">
+              <div class="name-cell">
+                <span class="name">{{ template.name }}</span>
               </div>
-            </ion-col>
-          </ion-row>
-
-          <!-- Actions -->
-          <ion-row class="action-buttons">
-            <ion-col>
-              <ion-button size="small" fill="outline" (click)="editTemplate(template)">
-                <ion-icon name="create" slot="start"></ion-icon>
-                Edit
-              </ion-button>
-              <ion-button size="small" fill="outline" color="danger" (click)="deleteTemplate(template)">
-                <ion-icon name="trash" slot="start"></ion-icon>
-                Delete
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
+            </td>
+            <td class="clickable" (click)="editTemplate(template)">
+              <span class="currency">{{ template.currency?.code }}</span>
+            </td>
+            <td class="clickable" (click)="editTemplate(template)">
+              <span class="items-count">{{ template.items?.length || 0 }} item(s)</span>
+            </td>
+            <td class="clickable amount-column" (click)="editTemplate(template)">
+              <div class="total-info">
+                <span class="total">{{ calculateTemplateTotal(template) | number:'1.2-2' }}</span>
+                <span class="currency">{{ template.currency?.code }}</span>
+              </div>
+            </td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <ion-button fill="clear" size="small" (click)="useTemplate(template); $event.stopPropagation()">
+                  <ion-icon name="document" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" (click)="editTemplate(template); $event.stopPropagation()">
+                  <ion-icon name="create" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="deleteTemplate(template); $event.stopPropagation()">
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredTemplates().length === 0">
+            <td colspan="6" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="document-outline" class="empty-icon"></ion-icon>
+                <h2>No templates found</h2>
+                <p>Create your first quote template to speed up quote creation</p>
+                <ion-button (click)="isAdding = true">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Create Template
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Add/Edit Template Form -->
@@ -86,7 +149,6 @@
           <!-- Currency -->
           <ion-item>
             <ion-label>Currency *</ion-label>
-            <!--Default currency is GHS-->
             <ion-select formControlName="currency_id" placeholder="Select Currency" >
               <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
                 {{ currency.name }} ({{ currency.code }})

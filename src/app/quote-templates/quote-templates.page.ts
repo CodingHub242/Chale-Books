@@ -1,32 +1,32 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import {
-  IonContent,IonCardTitle,IonCardHeader, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel,
+  IonContent, IonCardTitle, IonCardHeader, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel,
   IonButton, IonInput, IonCard, IonCardContent, IonFab, IonFabButton, IonIcon,
   IonSelect, IonSelectOption, IonTextarea, IonButtons, IonBackButton, IonGrid,
   IonRow, IonCol, IonBadge, IonModal, IonSearchbar, ToastController, LoadingController,
-  AlertController,
-  IonMenuButton
+  AlertController, IonMenuButton, IonCheckbox
 } from '@ionic/angular/standalone';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, mail, document, close, eye, download, checkmark, arrowBack } from 'ionicons/icons';
+import { add, trash, create, mail, document, close, eye, download, checkmark, arrowBack, arrowUp, arrowDown, checkboxOutline, squareOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-quote-templates',
   templateUrl: './quote-templates.page.html',
-  schemas:[CUSTOM_ELEMENTS_SCHEMA],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./quote-templates.page.scss'],
   standalone: true,
   imports: [
-    IonContent, IonCardTitle,IonCardHeader, IonHeader, IonTitle, IonToolbar, CommonModule, ReactiveFormsModule, FormsModule,
+    IonContent, IonCardTitle, IonCardHeader, IonHeader, IonTitle, IonToolbar, CommonModule, ReactiveFormsModule, FormsModule,
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonFab, IonFabButton, IonIcon, IonSelect, IonSelectOption, IonTextarea,
-    IonButtons, IonBackButton,IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonModal,
-    IonSearchbar
+    IonButtons, IonBackButton, IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonModal,
+    IonSearchbar, IonCheckbox
   ]
 })
 export class QuoteTemplatesPage implements OnInit {
@@ -38,6 +38,13 @@ export class QuoteTemplatesPage implements OnInit {
   editingTemplate: any = null;
   searchTerm = '';
 
+  // Selection and bulk actions
+  selectedTemplates: any[] = [];
+
+  // Filtering and sorting
+  sortField = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private api: Api,
     private auth: Auth,
@@ -47,7 +54,7 @@ export class QuoteTemplatesPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add, trash, create, mail, document, close, eye, download, checkmark,arrowBack });
+    addIcons({ add, trash, create, mail, document, close, eye, download, checkmark, arrowBack, arrowUp, arrowDown, checkboxOutline, squareOutline });
     this.initForm();
   }
 
@@ -246,12 +253,111 @@ export class QuoteTemplatesPage implements OnInit {
   }
 
   getFilteredTemplates() {
-    if (!this.searchTerm) {
-      return this.quoteTemplates;
+    let filtered = this.quoteTemplates;
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(template =>
+        (template.name && template.name.toLowerCase().includes(searchLower))
+      );
     }
-    return this.quoteTemplates.filter(template =>
-      template.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
+
+    // Apply sorting
+    if (this.sortField) {
+      filtered = [...filtered].sort((a: any, b: any) => {
+        if (this.sortField === 'total') {
+          const aTotal = this.calculateTemplateTotal(a);
+          const bTotal = this.calculateTemplateTotal(b);
+          return this.sortDirection === 'asc' ? aTotal - bTotal : bTotal - aTotal;
+        }
+
+        let aVal: any = a[this.sortField] || '';
+        let bVal: any = b[this.sortField] || '';
+
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }
+
+  calculateTemplateTotal(template: any): number {
+    if (!template.items || template.items.length === 0) return 0;
+    return template.items.reduce((total: number, item: any) => {
+      const subtotal = (item.quantity || 0) * (item.unit_price || 0);
+      const discount = item.discount || 0;
+      const tax = (subtotal - discount) * ((item.tax_rate || 0) / 100);
+      return total + subtotal - discount + tax;
+    }, 0);
+  }
+
+  hasActiveFilters(): boolean {
+    return !!this.searchTerm;
+  }
+
+  clearFilters() {
+    this.searchTerm = '';
+  }
+
+  onSearch(event: any) {
+    // Search is already handled by getFilteredTemplates()
+  }
+
+  // Selection methods
+  isSelected(template: any): boolean {
+    return this.selectedTemplates.some(s => s.id === template.id);
+  }
+
+  toggleSelect(template: any, event: any) {
+    if (event.detail.checked) {
+      if (!this.isSelected(template)) {
+        this.selectedTemplates.push(template);
+      }
+    } else {
+      this.selectedTemplates = this.selectedTemplates.filter(s => s.id !== template.id);
+    }
+  }
+
+  toggleSelectAll(event: any) {
+    if (event.detail.checked) {
+      this.selectedTemplates = [...this.getFilteredTemplates()];
+    } else {
+      this.selectedTemplates = [];
+    }
+  }
+
+  isAllSelected(): boolean {
+    const filtered = this.getFilteredTemplates();
+    return filtered.length > 0 && filtered.every(template => this.isSelected(template));
+  }
+
+  isSomeSelected(): boolean {
+    return this.selectedTemplates.length > 0 && !this.isAllSelected();
+  }
+
+  clearSelection() {
+    this.selectedTemplates = [];
+  }
+
+  // Sorting methods
+  sortBy(field: string) {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  // Row click handler
+  onRowClick(template: any, event: Event) {
+    if ((event.target as HTMLElement).tagName === 'ION-CHECKBOX') {
+      return;
+    }
+    this.editTemplate(template);
   }
 
   calculateItemTotal(item: any): number {
@@ -284,6 +390,48 @@ export class QuoteTemplatesPage implements OnInit {
 
   calculateGrandTotal(): number {
     return this.calculateSubtotal() - this.calculateTotalDiscount() + this.calculateTotalTax();
+  }
+
+  async bulkDelete() {
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: `Are you sure you want to delete ${this.selectedTemplates.length} template(s)?`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await this.presentLoading('Deleting templates...');
+            
+            // Delete templates one by one
+            const deleteCalls = this.selectedTemplates.map(template =>
+              this.api.deleteQuoteTemplate(template.id)
+            );
+
+            forkJoin(deleteCalls).subscribe({
+              next: async () => {
+                loading.dismiss();
+                await this.presentToast('Templates deleted successfully!', 'success');
+                this.loadQuoteTemplates();
+                this.clearSelection();
+              },
+              error: async (error: any) => {
+                loading.dismiss();
+                await this.presentToast('Error deleting templates: ' + error.message, 'danger');
+                this.loadQuoteTemplates();
+                this.clearSelection();
+              }
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {

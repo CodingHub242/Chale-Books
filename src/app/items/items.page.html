@@ -12,96 +12,183 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!isAdding && !editingItem">
-    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search items..." animated></ion-searchbar>
+
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedItems.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedItems.length }} item(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkDelete()" color="danger">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="!isAdding && !editingItem && selectedItems.length === 0" class="filters-toolbar">
+    <ion-grid class="filters-grid">
+      <ion-row class="filters-row">
+        <ion-col size="12" size-md="8">
+          <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search items..." animated class="search-bar" (ionInput)="onSearch($event)"></ion-searchbar>
+        </ion-col>
+        <ion-col size="12" size-md="4" class="ion-text-end">
+          <ion-button fill="clear" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Clear Filters
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Item List -->
-  <div *ngIf="!isAdding && !editingItem" class="item-container">
-    <ion-card *ngFor="let item of getFilteredItems()" class="item-card">
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="8">
-              <h2 class="item-title">{{ item.name }}</h2>
-              <p class="item-description" *ngIf="item.description">{{ item.description }}</p>
-              <p class="item-price">
-                <ion-icon name="cash"></ion-icon>
-                {{ item.unit_price | number:'1.2-2' }}
-                <span *ngIf="item.tax_rate > 0"> (Tax: {{ item.tax_rate }}%)</span>
-                <span *ngIf="item.discount > 0"> (Discount: {{ item.discount | number:'1.2-2' }})</span>
-              </p>
-            </ion-col>
-            <ion-col size="12" size-md="4" class="ion-text-end">
-              <ion-button size="small" fill="outline" (click)="editItem(item)">
-                <ion-icon name="create" slot="start"></ion-icon>
-                Edit
-              </ion-button>
-              <ion-button size="small" fill="outline" color="danger" (click)="deleteItem(item)">
-                <ion-icon name="trash" slot="start"></ion-icon>
-                Delete
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
-
-    <div *ngIf="getFilteredItems().length === 0" class="no-items">
-      <ion-icon name="document-outline" size="large" color="medium"></ion-icon>
-      <p>No items found</p>
+  <!-- Item Table -->
+  <div *ngIf="!isAdding && !editingItem" class="items-container">
+    <div class="table-responsive">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('name')" class="sortable">
+              Name
+              <ion-icon *ngIf="sortField === 'name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Description</th>
+            <th (click)="sortBy('unit_price')" class="sortable">
+              Unit Price
+              <ion-icon *ngIf="sortField === 'unit_price'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('tax_rate')" class="sortable">
+              Tax Rate
+              <ion-icon *ngIf="sortField === 'tax_rate'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('discount')" class="sortable">
+              Discount
+              <ion-icon *ngIf="sortField === 'discount'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of getFilteredItems()"
+              [class.selected]="isSelected(item)"
+              (click)="onRowClick(item, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox
+                [checked]="isSelected(item)"
+                (ionChange)="toggleSelect(item, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable" (click)="editItem(item)">
+              <div class="name-cell">
+                <span class="name">{{ item.name }}</span>
+              </div>
+            </td>
+            <td class="clickable" (click)="editItem(item)">
+              <div class="description-cell">
+                <span class="description">{{ item.description || '-' }}</span>
+              </div>
+            </td>
+            <td class="clickable amount-column" (click)="editItem(item)">
+              <div class="price-info">
+                <span class="price">{{ item.unit_price | number:'1.2-2' }}</span>
+              </div>
+            </td>
+            <td class="clickable" (click)="editItem(item)">
+              <span class="tax-rate">{{ item.tax_rate || 0 }}%</span>
+            </td>
+            <td class="clickable" (click)="editItem(item)">
+              <span class="discount">{{ item.discount | number:'1.2-2' }}</span>
+            </td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <ion-button fill="clear" size="small" (click)="editItem(item); $event.stopPropagation()">
+                  <ion-icon name="create" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="deleteItem(item); $event.stopPropagation()">
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredItems().length === 0">
+            <td colspan="7" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
+                <h2>No items found</h2>
+                <p>Add your first item to start creating quotes and invoices</p>
+                <ion-button (click)="isAdding = true">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Add Item
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <!-- Add/Edit Form -->
-  <ion-card *ngIf="isAdding || editingItem" class="form-card">
-    <ion-card-header>
-      <ion-card-title>{{ editingItem ? 'Edit Item' : 'Add New Item' }}</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <form [formGroup]="itemForm" (ngSubmit)="editingItem ? updateItem() : createItem()">
-        <!-- Name -->
-        <ion-item>
-          <ion-label position="floating">Name *</ion-label>
-          <ion-input formControlName="name" type="text"></ion-input>
-        </ion-item>
+  <div *ngIf="isAdding || editingItem" class="form-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ editingItem ? 'Edit Item' : 'Add New Item' }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="itemForm" (ngSubmit)="editingItem ? updateItem() : createItem()">
+          <!-- Name -->
+          <ion-item>
+            <ion-label position="floating">Name *</ion-label>
+            <ion-input formControlName="name" type="text"></ion-input>
+          </ion-item>
 
-        <!-- Description -->
-        <ion-item>
-          <ion-label position="floating">Description</ion-label>
-          <ion-textarea formControlName="description" rows="3"></ion-textarea>
-        </ion-item>
+          <!-- Description -->
+          <ion-item>
+            <ion-label position="floating">Description</ion-label>
+            <ion-textarea formControlName="description" rows="3"></ion-textarea>
+          </ion-item>
 
-        <!-- Unit Price -->
-        <ion-item>
-          <ion-label position="floating">Unit Price *</ion-label>
-          <ion-input formControlName="unit_price" type="number" step="0.01"></ion-input>
-        </ion-item>
+          <!-- Unit Price -->
+          <ion-item>
+            <ion-label position="floating">Unit Price *</ion-label>
+            <ion-input formControlName="unit_price" type="number" step="0.01"></ion-input>
+          </ion-item>
 
-        <!-- Tax Rate -->
-        <ion-item>
-          <ion-label position="floating">Tax Rate (%)</ion-label>
-          <ion-input formControlName="tax_rate" type="number" step="0.01" min="0" max="100"></ion-input>
-        </ion-item>
+          <!-- Tax Rate -->
+          <ion-item>
+            <ion-label position="floating">Tax Rate (%)</ion-label>
+            <ion-input formControlName="tax_rate" type="number" step="0.01" min="0" max="100"></ion-input>
+          </ion-item>
 
-        <!-- Discount -->
-        <ion-item>
-          <ion-label position="floating">Discount</ion-label>
-          <ion-input formControlName="discount" type="number" step="0.01" min="0"></ion-input>
-        </ion-item>
+          <!-- Discount -->
+          <ion-item>
+            <ion-label position="floating">Discount</ion-label>
+            <ion-input formControlName="discount" type="number" step="0.01" min="0"></ion-input>
+          </ion-item>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <ion-button expand="block" type="submit" [disabled]="!itemForm.valid">
-            {{ editingItem ? 'Update Item' : 'Create Item' }}
-          </ion-button>
-          <ion-button expand="block" fill="outline" (click)="editingItem ? cancelEdit() : cancelAdd()">
-            Cancel
-          </ion-button>
-        </div>
-      </form>
-    </ion-card-content>
-  </ion-card>
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <ion-button expand="block" type="submit" [disabled]="!itemForm.valid">
+              {{ editingItem ? 'Update Item' : 'Create Item' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="editingItem ? cancelEdit() : cancelAdd()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>

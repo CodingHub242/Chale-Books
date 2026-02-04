@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-     <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-button (click)="goBack()">
         <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
       </ion-button>
@@ -12,44 +12,124 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedUsers.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedUsers.length }} user(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkDelete()" color="danger">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="selectedUsers.length === 0" class="filters-toolbar">
+    <ion-grid class="filters-grid">
+      <ion-row class="filters-row">
+        <ion-col size="12" size-md="8">
+          <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search users..." animated class="search-bar" (ionInput)="onSearch($event)"></ion-searchbar>
+        </ion-col>
+        <ion-col size="12" size-md="4" class="ion-text-end">
+          <ion-button fill="clear" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Clear Filters
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-loading [isOpen]="isLoading" message="Loading..."></ion-loading>
 
-  <div class="users-container">
-    <div class="users-header">
-      <h2>Team Members</h2>
-      <p>Manage your team members and their roles</p>
-    </div>
-
-    <ion-list>
-      <ion-item *ngFor="let user of users" class="user-item">
-        <ion-avatar slot="start">
-          <div class="avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div>
-        </ion-avatar>
-        <ion-label>
-          <h3>{{ user.name }}</h3>
-          <p>{{ user.email }}</p>
-          <ion-chip *ngFor="let role of user.roles" [color]="getRoleColor(role.name)" class="role-chip">
-            {{ getRoleLabel(role.name) }}
-          </ion-chip>
-        </ion-label>
-        <ion-buttons slot="end">
-          <ion-button (click)="openModal(user)" color="primary">
-            <ion-icon name="create"></ion-icon>
-          </ion-button>
-          <ion-button (click)="deleteUser(user)" color="danger" [disabled]="user.id === currentUser?.id">
-            <ion-icon name="trash"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-item>
-    </ion-list>
-
-    <div *ngIf="users.length === 0 && !isLoading" class="empty-state">
-      <ion-icon name="people-outline" size="large"></ion-icon>
-      <p>No users found</p>
-      <ion-button (click)="openModal()">Add User</ion-button>
+  <!-- Users Table -->
+  <div class="users-container" *ngIf="selectedUsers.length === 0">
+    <div class="table-responsive">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('name')" class="sortable">
+              Name
+              <ion-icon *ngIf="sortField === 'name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('email')" class="sortable">
+              Email
+              <ion-icon *ngIf="sortField === 'email'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Roles</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of getFilteredUsers()"
+              [class.selected]="isSelected(user)"
+              (click)="onRowClick(user, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox
+                [checked]="isSelected(user)"
+                [disabled]="user.id === currentUser?.id"
+                (ionChange)="toggleSelect(user, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable" (click)="openModal(user)">
+              <div class="name-cell">
+                <div class="avatar">{{ user.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
+                <span class="name">{{ user.name }}</span>
+              </div>
+            </td>
+            <td class="clickable" (click)="openModal(user)">
+              <div class="email-cell">
+                <ion-icon name="mail-outline"></ion-icon>
+                <span>{{ user.email }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="roles-cell">
+                <ion-chip *ngFor="let role of user.roles" [color]="getRoleColor(role.name)" class="role-chip">
+                  {{ getRoleLabel(role.name) }}
+                </ion-chip>
+              </div>
+            </td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <ion-button fill="clear" size="small" (click)="openModal(user); $event.stopPropagation()">
+                  <ion-icon name="create" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="deleteUser(user); $event.stopPropagation()" [disabled]="user.id === currentUser?.id">
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredUsers().length === 0">
+            <td colspan="5" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+                <h2>No users found</h2>
+                <p>Add your first user to manage your team</p>
+                <ion-button (click)="openModal()">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Add User
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

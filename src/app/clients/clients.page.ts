@@ -1,18 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { 
-  IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel, 
+import { forkJoin } from 'rxjs';
+import {
+  IonContent, IonHeader, IonTitle, IonToolbar, IonList, IonItem, IonLabel,
   IonButton, IonInput, IonCard, IonCardContent, IonFab, IonFabButton, IonIcon,
   IonButtons, IonBackButton, IonSearchbar, IonGrid, IonRow, IonCol,
   ToastController, LoadingController, AlertController,
-  IonMenuButton
+  IonMenuButton, IonCheckbox
 } from '@ionic/angular/standalone';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add,arrowBack, trash, create, close, person } from 'ionicons/icons';
+import { add, arrowBack, trash, create, close, person, checkboxOutline, squareOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-clients',
@@ -21,9 +22,9 @@ import { add,arrowBack, trash, create, close, person } from 'ionicons/icons';
   standalone: true,
   imports: [
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, ReactiveFormsModule,
-    IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent, 
-    IonFab, IonFabButton, IonIcon,IonMenuButton, IonButtons, IonBackButton, IonSearchbar,
-    IonGrid, IonRow, IonCol
+    IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
+    IonFab, IonFabButton, IonIcon, IonMenuButton, IonButtons, IonBackButton, IonSearchbar,
+    IonGrid, IonRow, IonCol, IonCheckbox
   ]
 })
 export class ClientsPage implements OnInit {
@@ -32,6 +33,13 @@ export class ClientsPage implements OnInit {
   isAdding = false;
   editingClient: any = null;
   searchTerm = '';
+
+  // Selection and bulk actions
+  selectedClients: any[] = [];
+
+  // Filtering and sorting
+  sortField = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   // Pagination properties
   currentPage = 1;
@@ -49,7 +57,7 @@ export class ClientsPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add,arrowBack, trash, create, close, person });
+    addIcons({ add, arrowBack, trash, create, close, person, checkboxOutline, squareOutline });
     this.initForm();
   }
 
@@ -213,9 +221,141 @@ export class ClientsPage implements OnInit {
     this.loadClients(1);
   }
 
+  onSearch(event: any) {
+    this.currentPage = 1;
+  }
+
   getFilteredClients() {
-    // Since search is now server-side, just return current page data
-    return this.clients;
+    let filtered = this.clients;
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(client =>
+        (client.name && client.name.toLowerCase().includes(searchLower)) ||
+        (client.email && client.email.toLowerCase().includes(searchLower)) ||
+        (client.phone && client.phone.includes(searchLower)) ||
+        (client.address && client.address.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply sorting
+    if (this.sortField) {
+      filtered = [...filtered].sort((a: any, b: any) => {
+        let aVal: any = a[this.sortField] || '';
+        let bVal: any = b[this.sortField] || '';
+
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }
+
+  hasActiveFilters(): boolean {
+    return !!this.searchTerm;
+  }
+
+  clearFilters() {
+    this.searchTerm = '';
+  }
+
+  // Selection methods
+  isSelected(client: any): boolean {
+    return this.selectedClients.some(s => s.id === client.id);
+  }
+
+  toggleSelect(client: any, event: any) {
+    if (event.detail.checked) {
+      if (!this.isSelected(client)) {
+        this.selectedClients.push(client);
+      }
+    } else {
+      this.selectedClients = this.selectedClients.filter(s => s.id !== client.id);
+    }
+  }
+
+  toggleSelectAll(event: any) {
+    if (event.detail.checked) {
+      this.selectedClients = [...this.getFilteredClients()];
+    } else {
+      this.selectedClients = [];
+    }
+  }
+
+  isAllSelected(): boolean {
+    const filtered = this.getFilteredClients();
+    return filtered.length > 0 && filtered.every(client => this.isSelected(client));
+  }
+
+  isSomeSelected(): boolean {
+    return this.selectedClients.length > 0 && !this.isAllSelected();
+  }
+
+  clearSelection() {
+    this.selectedClients = [];
+  }
+
+  // Sorting methods
+  sortBy(field: string) {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  // Row click handler
+  onRowClick(client: any, event: Event) {
+    if ((event.target as HTMLElement).tagName === 'ION-CHECKBOX') {
+      return;
+    }
+    this.editClient(client);
+  }
+
+  async bulkDelete() {
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: `Are you sure you want to delete ${this.selectedClients.length} client(s)?`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await this.presentLoading('Deleting clients...');
+            
+            // Delete clients one by one
+            const deleteCalls = this.selectedClients.map(client =>
+              this.api.deleteClient(client.id)
+            );
+
+            forkJoin(deleteCalls).subscribe({
+              next: async () => {
+                loading.dismiss();
+                await this.presentToast('Clients deleted successfully!', 'success');
+                this.loadClients();
+                this.clearSelection();
+              },
+              error: async (error) => {
+                loading.dismiss();
+                await this.presentToast('Error deleting clients: ' + error.message, 'danger');
+                this.loadClients();
+                this.clearSelection();
+              }
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {

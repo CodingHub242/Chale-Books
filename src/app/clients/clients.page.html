@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-     <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-button (click)="goBack()">
         <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
       </ion-button>
@@ -12,55 +12,133 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!isAdding && !editingClient">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange()" placeholder="Search clients..." animated></ion-searchbar>
+
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedClients.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedClients.length }} client(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkDelete()" color="danger">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="!isAdding && !editingClient && selectedClients.length === 0" class="filters-toolbar">
+    <ion-grid class="filters-grid">
+      <ion-row class="filters-row">
+        <ion-col size="12" size-md="8">
+          <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search clients..." animated class="search-bar" (ionInput)="onSearch($event)"></ion-searchbar>
+        </ion-col>
+        <ion-col size="12" size-md="4" class="ion-text-end">
+          <ion-button fill="clear" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Clear Filters
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Client List -->
+  <!-- Client Table -->
   <div *ngIf="!isAdding && !editingClient" class="clients-container">
-    <ion-card *ngFor="let client of getFilteredClients()" class="client-card">
-      <ion-card-content>
-        <div class="client-header">
-          <div class="client-avatar">
-            {{ client.name?.charAt(0)?.toUpperCase() || 'C' }}
-          </div>
-          <div class="client-info">
-            <h2 class="client-name">
-              <ion-icon name="person"></ion-icon>
-              {{ client.name }}
-            </h2>
-          </div>
-        </div>
-
-        <div class="client-details">
-          <div class="client-detail-item email">
-            <ion-icon name="mail"></ion-icon>
-            <span>{{ client.email }}</span>
-          </div>
-          <div class="client-detail-item phone" *ngIf="client.phone">
-            <ion-icon name="call"></ion-icon>
-            <span>{{ client.phone }}</span>
-          </div>
-          <div class="client-detail-item address" *ngIf="client.address">
-            <ion-icon name="location"></ion-icon>
-            <span>{{ client.address }}</span>
-          </div>
-        </div>
-
-        <div class="client-actions">
-          <ion-button fill="outline" (click)="editClient(client)">
-            <ion-icon name="create" slot="start"></ion-icon>
-            Edit
-          </ion-button>
-          <ion-button color="danger" fill="outline" (click)="deleteClient(client)">
-            <ion-icon name="trash" slot="start"></ion-icon>
-            Delete
-          </ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    <div class="table-responsive">
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('name')" class="sortable">
+              Name
+              <ion-icon *ngIf="sortField === 'name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('email')" class="sortable">
+              Email
+              <ion-icon *ngIf="sortField === 'email'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('phone')" class="sortable">
+              Phone
+              <ion-icon *ngIf="sortField === 'phone'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Address</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of getFilteredClients()"
+              [class.selected]="isSelected(client)"
+              (click)="onRowClick(client, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox
+                [checked]="isSelected(client)"
+                (ionChange)="toggleSelect(client, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable" (click)="editClient(client)">
+              <div class="name-cell">
+                <div class="avatar">{{ client.name?.charAt(0)?.toUpperCase() || 'C' }}</div>
+                <span class="name">{{ client.name }}</span>
+              </div>
+            </td>
+            <td class="clickable" (click)="editClient(client)">
+              <div class="email-cell">
+                <ion-icon name="mail-outline"></ion-icon>
+                <span>{{ client.email }}</span>
+              </div>
+            </td>
+            <td class="clickable" (click)="editClient(client)">
+              <div class="phone-cell" *ngIf="client.phone">
+                <ion-icon name="call-outline"></ion-icon>
+                <span>{{ client.phone }}</span>
+              </div>
+              <span *ngIf="!client.phone" class="empty-text">-</span>
+            </td>
+            <td class="clickable" (click)="editClient(client)">
+              <div class="address-cell" *ngIf="client.address">
+                <ion-icon name="location-outline"></ion-icon>
+                <span>{{ client.address }}</span>
+              </div>
+              <span *ngIf="!client.address" class="empty-text">-</span>
+            </td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <ion-button fill="clear" size="small" (click)="editClient(client); $event.stopPropagation()">
+                  <ion-icon name="create" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="deleteClient(client); $event.stopPropagation()">
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredClients().length === 0">
+            <td colspan="6" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="people-outline" class="empty-icon"></ion-icon>
+                <h2>No clients found</h2>
+                <p>Add your first client to start creating quotes and invoices</p>
+                <ion-button (click)="isAdding = true">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Add Client
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Pagination -->
     <div *ngIf="totalPages > 1" class="pagination-container">
@@ -92,17 +170,6 @@
           </ion-col>
         </ion-row>
       </ion-grid>
-    </div>
-
-    <!-- Empty State -->
-    <div *ngIf="getFilteredClients().length === 0" class="empty-state">
-      <ion-icon name="people-outline" class="empty-icon"></ion-icon>
-      <h2>No clients found</h2>
-      <p>Add your first client to start creating quotes and invoices</p>
-      <ion-button (click)="isAdding = true">
-        <ion-icon name="add" slot="start"></ion-icon>
-        Add Client
-      </ion-button>
     </div>
   </div>
 
