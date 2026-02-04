@@ -7,14 +7,15 @@ import {
   IonSelect, IonSelectOption, IonTextarea, IonButtons, IonBackButton, IonGrid,
   IonRow, IonCol, IonBadge, IonModal, IonSearchbar, ToastController, LoadingController,
   AlertController,
-  IonMenuButton
+  IonMenuButton, IonCheckbox, IonChip
 } from '@ionic/angular/standalone';
+import { forkJoin } from 'rxjs';
 import {Location} from '@angular/common';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, mail, document, close, eye, download, checkmark, arrowBack } from 'ionicons/icons';
+import { add, trash, create, mail, document, close, eye, download, checkmark, arrowBack, arrowUp, arrowDown, filter } from 'ionicons/icons';
 
 @Component({
   selector: 'app-quotes',
@@ -26,8 +27,8 @@ import { add, trash, create, mail, document, close, eye, download, checkmark, ar
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, ReactiveFormsModule, FormsModule,
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonFab, IonFabButton, IonIcon, IonSelect, IonSelectOption, IonTextarea,
-    IonButtons, IonBackButton,IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonModal,
-    IonSearchbar
+    IonButtons, IonBackButton, IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonModal,
+    IonSearchbar, IonCheckbox, IonChip
   ]
 })
 export class QuotesPage implements OnInit {
@@ -47,6 +48,15 @@ export class QuotesPage implements OnInit {
   totalQuotes = 0;
   isLoading = false;
 
+  // Selection and bulk actions
+  selectedQuotes: any[] = [];
+  
+  // Filtering and sorting
+  statusFilter = '';
+  showStatusFilter = true;
+  sortField = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private api: Api,
     private auth: Auth,
@@ -57,7 +67,7 @@ export class QuotesPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add,arrowBack, trash, create, mail, document, close, eye, download, checkmark });
+    addIcons({ add, arrowBack, trash, create, mail, document, close, eye, download, checkmark, arrowUp, arrowDown, filter });
     this.initForm();
   }
 
@@ -83,6 +93,10 @@ export class QuotesPage implements OnInit {
     this.quoteForm = this.fb.group({
       client_id: ['', Validators.required],
       currency_id: ['', Validators.required],
+      show_name: [''],
+      show_date: [''],
+      show_time: [''],
+      show_location: [''],
       expiry_date: ['', Validators.required],
       status: ['draft'],
       notes: [''],
@@ -274,6 +288,10 @@ export class QuotesPage implements OnInit {
     this.quoteForm.patchValue({
       client_id: quote.client_id,
       currency_id: quote.currency_id,
+      show_name: quote.show_name || '',
+      show_date: quote.show_date || '',
+      show_time: quote.show_time || '',
+      show_location: quote.show_location || '',
       expiry_date: quote.expiry_date,
       status: quote.status,
       notes: quote.notes
@@ -430,34 +448,75 @@ export class QuotesPage implements OnInit {
     return colors[status] || 'medium';
   }
 
-  formatExpiryDate(dateString: string): string {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
-
-    // Check if the date has expired
-    if (date < today) {
-      return 'Expired';
-    }
-
+  // Date formatting methods
+  formatExpiryDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
     const day = date.getDate();
-    const month = date.toLocaleString('en-US', { month: 'long' });
+    const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getFullYear();
-
+    
     // Add ordinal suffix to day
-    const getOrdinalSuffix = (day: number): string => {
-      if (day > 3 && day < 21) return 'th';
-      switch (day % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
+    const suffix = this.getDaySuffix(day);
+    return `${day}${suffix} ${month},${year}`;
+  }
 
-    return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`;
+  formatShowDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const year = date.getFullYear();
+    
+    // Add ordinal suffix to day
+    const suffix = this.getDaySuffix(day);
+    return `${day}${suffix} ${month},${year}`;
+  }
+
+  getDaySuffix(day: number): string {
+    if (day >= 11 && day <= 13) {
+      return 'th';
+    }
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  }
+
+  getDaysRemaining(expiryDate: string): number {
+    if (!expiryDate) return 0;
+    const expiry = new Date(expiryDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    expiry.setHours(0, 0, 0, 0);
+    const diffTime = expiry.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  isExpired(expiryDate: string): boolean {
+    return this.getDaysRemaining(expiryDate) < 0;
+  }
+
+  getDaysRemainingText(expiryDate: string): string {
+    const days = this.getDaysRemaining(expiryDate);
+    if (days < 0) {
+      return 'Expired';
+    } else if (days === 0) {
+      return 'Expires today';
+    } else if (days === 1) {
+      return '1 day left';
+    } else {
+      return `${days} days left`;
+    }
+  }
+
+  getDaysRemainingClass(expiryDate: string): string {
+    const days = this.getDaysRemaining(expiryDate);
+    if (days < 0) return 'overdue';
+    if (days <= 7) return 'soon';
+    return 'normal';
   }
 
   // Pagination methods
@@ -483,12 +542,200 @@ export class QuotesPage implements OnInit {
   onSearchChange() {
     // Reset to first page when searching
     this.currentPage = 1;
-    this.loadQuotes(1);
+    //this.loadQuotes(1);
   }
 
   getFilteredQuotes() {
-    // Since search is now server-side, just return current page data
-    return this.quotes;
+    let filtered = this.quotes;
+
+    // Apply search filter
+    if (this.searchTerm) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(quote => {
+        const clientName = quote.client?.name || '';
+        const showName = quote.show_name || '';
+        const showLocation = quote.show_location || '';
+        return quote.id?.toString().includes(searchLower) ||
+               clientName.toLowerCase().includes(searchLower) ||
+               showName.toLowerCase().includes(searchLower) ||
+               showLocation.toLowerCase().includes(searchLower);
+      });
+    }
+
+    // Apply status filter
+    if (this.statusFilter) {
+      filtered = filtered.filter(quote => quote.status === this.statusFilter);
+    }
+
+    // Apply sorting
+    if (this.sortField) {
+      filtered = [...filtered].sort((a: any, b: any) => {
+        let aVal: any = a[this.sortField];
+        let bVal: any = b[this.sortField];
+
+        // Handle client name lookup
+        if (this.sortField === 'client_name') {
+          aVal = a.client?.name || '';
+          bVal = b.client?.name || '';
+        }
+
+        // Handle numeric values
+        if (this.sortField === 'total') {
+          aVal = a.total || a.amount || 0;
+          bVal = b.total || b.amount || 0;
+        }
+
+        // Compare
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }
+
+  // Selection methods
+  isSelected(quote: any): boolean {
+    return this.selectedQuotes.some(s => s.id === quote.id);
+  }
+
+  toggleSelect(quote: any, event: any) {
+    if (event.detail.checked) {
+      if (!this.isSelected(quote)) {
+        this.selectedQuotes.push(quote);
+      }
+    } else {
+      this.selectedQuotes = this.selectedQuotes.filter(s => s.id !== quote.id);
+    }
+  }
+
+  toggleSelectAll(event: any) {
+    if (event.detail.checked) {
+      this.selectedQuotes = [...this.getFilteredQuotes()];
+    } else {
+      this.selectedQuotes = [];
+    }
+  }
+
+  isAllSelected(): boolean {
+    const filtered = this.getFilteredQuotes();
+    return filtered.length > 0 && filtered.every(quote => this.isSelected(quote));
+  }
+
+  isSomeSelected(): boolean {
+    return this.selectedQuotes.length > 0 && !this.isAllSelected();
+  }
+
+  clearSelection() {
+    this.selectedQuotes = [];
+  }
+
+  // Sorting methods
+  sortBy(field: string) {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  // Status filter methods
+  toggleStatusFilter() {
+    this.showStatusFilter = !this.showStatusFilter;
+  }
+
+  setStatusFilter(status: string) {
+    this.statusFilter = status;
+    this.showStatusFilter = true;
+  }
+
+  // Row click handler
+  onRowClick(quote: any, event: Event) {
+    // If clicking on checkbox, don't trigger row click
+    if ((event.target as HTMLElement).tagName === 'ION-CHECKBOX') {
+      return;
+    }
+    this.previewPdf(quote);
+  }
+
+  // Bulk actions
+  bulkEdit() {
+    if (this.selectedQuotes.length === 1) {
+      this.editQuote(this.selectedQuotes[0]);
+      this.clearSelection();
+    }
+  }
+
+  bulkPreview() {
+    if (this.selectedQuotes.length === 1) {
+      this.previewPdf(this.selectedQuotes[0]);
+    } else {
+      this.presentToast('Please select exactly one quote to preview', 'warning');
+    }
+  }
+
+  bulkDownload() {
+    this.selectedQuotes.forEach(quote => {
+      this.downloadPdf(quote);
+    });
+    this.clearSelection();
+  }
+
+  bulkSend() {
+    this.selectedQuotes.forEach(quote => {
+      if (quote.status === 'draft') {
+        this.sendQuote(quote);
+      }
+    });
+    this.clearSelection();
+  }
+
+  canBulkSend(): boolean {
+    return this.selectedQuotes.every(quote => quote.status === 'draft');
+  }
+
+  async bulkDelete() {
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: `Are you sure you want to delete ${this.selectedQuotes.length} quote(s)?`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            const loading = await this.presentLoading('Deleting quotes...');
+            
+            // Delete quotes one by one
+            const deleteCalls = this.selectedQuotes.map(quote => 
+              this.api.deleteQuote(quote.id)
+            );
+            
+            forkJoin(deleteCalls).subscribe({
+              next: async () => {
+                loading.dismiss();
+                await this.presentToast('Quotes deleted successfully!', 'success');
+                this.loadQuotes();
+                this.clearSelection();
+              },
+              error: async (error) => {
+                loading.dismiss();
+                await this.presentToast('Error deleting quotes: ' + error.message, 'danger');
+                this.loadQuotes();
+                this.clearSelection();
+              }
+            });
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
@@ -509,7 +756,7 @@ export class QuotesPage implements OnInit {
     return loading;
   }
 
-   goBack() {
+  goBack() {
     this.router.navigate(['/dashboard']);
   }
 }

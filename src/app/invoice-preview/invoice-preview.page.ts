@@ -76,11 +76,11 @@ export class InvoicePreviewPage implements OnInit, OnDestroy {
 
   async loadInvoice() {
     const loading = await this.presentLoading('Loading invoice...');
-    //this.api.getInvoice(this.invoiceId)
-    this.api.getInvoices().subscribe({
+    this.api.getInvoice(this.invoiceId).subscribe({
+    //this.api.getInvoices().subscribe({
       next: (data: any) => {
-        //this.invoice = data;
-        this.invoice = data.find((inv: any) => inv.id === this.invoiceId);
+        this.invoice = data;
+        //this.invoice = data.find((inv: any) => inv.id === this.invoiceId);
         if (this.invoice) {
           // Pre-fill email subject
           this.emailForm.patchValue({

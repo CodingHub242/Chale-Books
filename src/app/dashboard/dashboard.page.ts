@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
   IonContent, IonButtons, IonLabel, IonHeader, IonTitle, IonToolbar, IonCard,
   IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonMenuButton, IonMenu,
   IonList, IonItem,IonAvatar, IonIcon, IonGrid, IonRow, IonCol, IonBadge
 } from '@ionic/angular/standalone';
+import { MenuController } from '@ionic/angular';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
@@ -26,7 +26,7 @@ import {
   standalone: true,
   imports: [
     IonContent, IonLabel, IonButtons, IonHeader, IonTitle, IonToolbar, CommonModule,
-    FormsModule, RouterModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton,
+    RouterModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton,
     IonMenuButton, IonMenu,IonAvatar,IonMenuButton, IonList, IonItem, IonIcon, IonGrid, IonRow, IonCol,
     IonBadge
   ]
@@ -56,7 +56,8 @@ export class DashboardPage implements OnInit {
   constructor(
     private api: Api,
     private auth: Auth,
-    public router: Router
+    public router: Router,
+    private menuController: MenuController
   ) {
     addIcons({ 
       home, people, document, cash, clipboard, logOut, trendingUp, trendingDown,
@@ -144,5 +145,11 @@ export class DashboardPage implements OnInit {
 
   async previewPdf(quote: any) {
     this.router.navigate(['/quote-preview', quote.id]);
+  }
+
+  async handleMenuClick(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    await this.menuController.close();
   }
 }

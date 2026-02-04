@@ -12,89 +12,180 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!isAdding && !editingQuote">
-    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange()" placeholder="Search quotes..." animated></ion-searchbar>
-  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Quote List -->
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedQuotes.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedQuotes.length }} quote(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkEdit()" *ngIf="selectedQuotes.length === 1">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkPreview()">
+        <ion-icon name="eye" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkDownload()">
+        <ion-icon name="download" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkSend()" *ngIf="canBulkSend()">
+        <ion-icon name="mail" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkDelete()">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="!isAdding && !editingQuote && selectedQuotes.length === 0">
+    <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange()" placeholder="Search quotes..." animated></ion-searchbar>
+    <ion-buttons slot="end">
+      <ion-button [fill]="statusFilter ? 'solid' : 'clear'" (click)="toggleStatusFilter()">
+        <ion-icon name="filter" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Status Filter Chips -->
+  <ion-toolbar *ngIf="showStatusFilter">
+    <ion-chip [color]="!statusFilter ? 'primary' : 'medium'" (click)="setStatusFilter('')">
+      <ion-label>All</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'draft' ? 'primary' : 'medium'" (click)="setStatusFilter('draft')">
+      <ion-label>Draft</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'sent' ? 'primary' : 'medium'" (click)="setStatusFilter('sent')">
+      <ion-label>Sent</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'accepted' ? 'primary' : 'medium'" (click)="setStatusFilter('accepted')">
+      <ion-label>Accepted</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'rejected' ? 'primary' : 'medium'" (click)="setStatusFilter('rejected')">
+      <ion-label>Rejected</ion-label>
+    </ion-chip>
+  </ion-toolbar>
+
+  <!-- Quote Table -->
   <div *ngIf="!isAdding && !editingQuote" class="quotes-container">
-    <ion-card *ngFor="let quote of getFilteredQuotes()" class="quote-card">
-      <ion-card-content>
-        <div class="quote-header">
-          <div class="quote-icon">
-            Q{{ quote.id }}
-          </div>
-          <div class="quote-info">
-            <h2 class="quote-title">
-              <ion-icon name="document"></ion-icon>
-              Quote #{{ quote.id }}
-            </h2>
-          </div>
-        </div>
-
-        <div class="quote-details">
-          <div class="quote-detail-item client">
-            <ion-icon name="person"></ion-icon>
-            <span>{{ quote.client?.name }}</span>
-          </div>
-          <div class="quote-detail-item date">
-            <ion-icon name="calendar"></ion-icon>
-            <span>Expires: {{ formatExpiryDate(quote.expiry_date) }}</span>
-          </div>
-        </div>
-
-        <div class="quote-amount-section">
-          <h3 class="quote-amount">
-            {{ quote.total || quote.amount | number:'1.2-2' }} {{ quote.currency?.code }}
-          </h3>
-          <div class="quote-status">
-            <ion-badge [color]="getStatusColor(quote.status)">
-              {{ quote.status | uppercase }}
-            </ion-badge>
-          </div>
-        </div>
-
-        <!-- Items Preview -->
-        <div *ngIf="quote.items && quote.items.length > 0" class="items-preview">
-          <p class="items-label">Items:</p>
-          <ul class="items-list">
-            <li *ngFor="let item of quote.items">
-              {{ item.description }} ({{ item.quantity }} × {{ item.unit_price | number:'1.2-2' }})
-            </li>
-          </ul>
-        </div>
-
-        <!-- Actions -->
-        <div class="action-buttons">
-          <ion-button fill="outline" (click)="editQuote(quote)">
-            <ion-icon name="create" slot="start"></ion-icon>
-            Edit
-          </ion-button>
-          <ion-button fill="outline" (click)="previewPdf(quote)">
-            <ion-icon name="eye" slot="start"></ion-icon>
-            Preview
-          </ion-button>
-          <ion-button fill="outline" (click)="downloadPdf(quote)">
-            <ion-icon name="download" slot="start"></ion-icon>
-            Download
-          </ion-button>
-          <ion-button fill="outline" (click)="sendQuote(quote)" *ngIf="quote.status === 'draft'">
-            <ion-icon name="mail" slot="start"></ion-icon>
-            Send
-          </ion-button>
-          <ion-button color="success" (click)="convertToInvoice(quote)" *ngIf="quote.status === 'accepted'">
-            <ion-icon name="checkmark" slot="start"></ion-icon>
-            Convert
-          </ion-button>
-          <ion-button color="danger" fill="outline" (click)="deleteQuote(quote)">
-            <ion-icon name="trash" slot="icon-only"></ion-icon>
-            Delete
-          </ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    <div class="table-responsive">
+      <table class="quotes-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox 
+                [checked]="isAllSelected()" 
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('id')" class="sortable">
+              Quote #
+              <ion-icon *ngIf="sortField === 'id'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('client_name')" class="sortable">
+              Client
+              <ion-icon *ngIf="sortField === 'client_name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('show_name')" class="sortable">
+              Show Name
+              <ion-icon *ngIf="sortField === 'show_name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('show_date')" class="sortable">
+              Show Date
+              <ion-icon *ngIf="sortField === 'show_date'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('show_time')" class="sortable">
+              Show Time
+              <ion-icon *ngIf="sortField === 'show_time'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('show_location')" class="sortable">
+              Show Location
+              <ion-icon *ngIf="sortField === 'show_location'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('expiry_date')" class="sortable">
+              Expiry Date
+              <ion-icon *ngIf="sortField === 'expiry_date'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('total')" class="sortable">
+              Amount
+              <ion-icon *ngIf="sortField === 'total'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let quote of getFilteredQuotes()" 
+              [class.selected]="isSelected(quote)"
+              (click)="onRowClick(quote, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox 
+                [checked]="isSelected(quote)"
+                (ionChange)="toggleSelect(quote, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              {{ quote.id }}
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              {{ quote.client?.name }}
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              {{ quote.show_name || '-' }}
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              <div class="date-display">
+                <span *ngIf="quote.show_date">{{ formatShowDate(quote.show_date) }}</span>
+                <span *ngIf="!quote.show_date">-</span>
+              </div>
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              {{ quote.show_time || '-' }}
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              {{ quote.show_location || '-' }}
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              <div class="date-display">
+                <span class="formatted-date">{{ formatExpiryDate(quote.expiry_date) }}</span>
+                <span class="days-remaining" [ngClass]="getDaysRemainingClass(quote.expiry_date)">
+                  {{ getDaysRemainingText(quote.expiry_date) }}
+                </span>
+              </div>
+            </td>
+            <td class="clickable" (click)="previewPdf(quote)">
+              <div class="amount-info">
+                <span class="amount">{{ quote.total || quote.amount | number:'1.2-2' }}</span>
+                <span class="currency">{{ quote.currency?.code }}</span>
+              </div>
+            </td>
+            <td>
+              <ion-badge [color]="getStatusColor(quote.status)">
+                {{ quote.status | uppercase }}
+              </ion-badge>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredQuotes().length === 0">
+            <td colspan="10" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="document-outline" class="empty-icon"></ion-icon>
+                <h2>No quotes found</h2>
+                <p>Create your first quote to get started</p>
+                <ion-button (click)="isAdding = true">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Create Quote
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Pagination -->
     <div *ngIf="totalPages > 1" class="pagination-container">
@@ -127,16 +218,6 @@
         </ion-row>
       </ion-grid>
     </div>
-
-    <div *ngIf="getFilteredQuotes().length === 0" class="empty-state">
-      <ion-icon name="document-outline" class="empty-icon"></ion-icon>
-      <h2>No quotes found</h2>
-      <p>Create your first quote to get started</p>
-      <ion-button (click)="isAdding = true">
-        <ion-icon name="add" slot="start"></ion-icon>
-        Create Quote
-      </ion-button>
-    </div>
   </div>
 
   <!-- Add/Edit Quote Form -->
@@ -155,6 +236,41 @@
               </ion-select-option>
             </ion-select>
           </ion-item>
+
+          <!-- Show Details Section -->
+          <div class="form-section">
+            <h3>Show Details</h3>
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12" size-md="6">
+                  <ion-item>
+                    <ion-label position="floating">Show Name</ion-label>
+                    <ion-input type="text" formControlName="show_name" placeholder="Enter show name"></ion-input>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                  <ion-item>
+                    <ion-label position="floating">Show Date</ion-label>
+                    <ion-input type="date" formControlName="show_date"></ion-input>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12" size-md="6">
+                  <ion-item>
+                    <ion-label position="floating">Show Time</ion-label>
+                    <ion-input type="time" formControlName="show_time" placeholder="Select time"></ion-input>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                  <ion-item>
+                    <ion-label position="floating">Show Location</ion-label>
+                    <ion-input type="text" formControlName="show_location" placeholder="Enter location"></ion-input>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </div>
 
           <!-- Currency Selection -->
           <ion-item>

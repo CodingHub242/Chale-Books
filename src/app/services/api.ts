@@ -146,6 +146,27 @@ export class Api {
       .pipe(catchError(this.handleError));
   }
 
+  // Expense Categories
+  getExpenseCategories(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/expense-categories`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  createExpenseCategory(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/expense-categories`, data, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  updateExpenseCategory(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/expense-categories/${id}`, data, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteExpenseCategory(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/expense-categories/${id}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
   // Quotes
   getQuotes(page: number = 1, perPage: number = 10, search?: string): Observable<any> {
     let params = `?page=${page}&per_page=${perPage}`;

@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-     <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-button (click)="goBack()">
         <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
       </ion-button>
@@ -12,90 +12,149 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!isAdding && !editingInvoice">
-    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search invoices..." animated></ion-searchbar>
-  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Invoice List -->
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedInvoices.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedInvoices.length }} invoice(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkEdit()" *ngIf="selectedInvoices.length === 1">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkPreview()">
+        <ion-icon name="eye" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkDownload()">
+        <ion-icon name="download" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkSend()" *ngIf="canBulkSend()">
+        <ion-icon name="mail" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkDelete()">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="!isAdding && !editingInvoice && selectedInvoices.length === 0">
+    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search invoices..." animated></ion-searchbar>
+    <ion-buttons slot="end">
+      <ion-button [fill]="statusFilter ? 'solid' : 'clear'" (click)="toggleStatusFilter()">
+        <ion-icon name="filter" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Status Filter Chips -->
+  <!-- <ion-toolbar *ngIf="showStatusFilter && selectedInvoices.length === 0"> -->
+    <ion-toolbar *ngIf="showStatusFilter">
+    <ion-chip [color]="!statusFilter ? 'primary' : 'medium'" (click)="setStatusFilter('')">
+      <ion-label>All</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'draft' ? 'primary' : 'medium'" (click)="setStatusFilter('draft')">
+      <ion-label>Draft</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'unpaid' ? 'primary' : 'medium'" (click)="setStatusFilter('unpaid')">
+      <ion-label>Unpaid</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'paid' ? 'primary' : 'medium'" (click)="setStatusFilter('paid')">
+      <ion-label>Paid</ion-label>
+    </ion-chip>
+    <ion-chip [color]="statusFilter === 'overdue' ? 'primary' : 'medium'" (click)="setStatusFilter('overdue')">
+      <ion-label>Overdue</ion-label>
+    </ion-chip>
+  </ion-toolbar>
+
+  <!-- Invoice Table -->
   <div *ngIf="!isAdding && !editingInvoice" class="invoices-container">
-    <ion-card *ngFor="let invoice of getFilteredInvoices()" class="invoice-card">
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="8">
-              <h2 class="invoice-title">{{ invoice.invoice_number || 'Invoice #' + invoice.id }}</h2>
-              <p class="invoice-client">
-                <ion-icon name="person"></ion-icon>
-                {{ invoice.client?.name }}
-              </p>
-              <p class="invoice-date">
-                <ion-icon name="calendar"></ion-icon>
-                Due: {{ invoice.due_date }}
-              </p>
-            </ion-col>
-            <ion-col size="12" size-md="4" class="ion-text-end">
-              <h3 class="invoice-amount">
-                {{ invoice.total || invoice.amount | number:'1.2-2' }} {{ invoice.currency?.code }}
-              </h3>
+    <div class="table-responsive">
+      <table class="invoices-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox 
+                [checked]="isAllSelected()" 
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('invoice_number')" class="sortable">
+              Invoice #
+              <ion-icon *ngIf="sortField === 'invoice_number'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('client_name')" class="sortable">
+              Client
+              <ion-icon *ngIf="sortField === 'client_name'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('due_date')" class="sortable">
+              Due Date
+              <ion-icon *ngIf="sortField === 'due_date'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('total')" class="sortable">
+              Amount
+              <ion-icon *ngIf="sortField === 'total'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of getFilteredInvoices()" 
+              [class.selected]="isSelected(invoice)"
+              (click)="onRowClick(invoice, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox 
+                [checked]="isSelected(invoice)"
+                (ionChange)="toggleSelect(invoice, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable" (click)="previewPdf(invoice)">
+              {{ invoice.invoice_number || 'Invoice #' + invoice.id }}
+            </td>
+            <td class="clickable" (click)="previewPdf(invoice)">
+              {{ invoice.client?.name }}
+            </td>
+            <td class="clickable" (click)="previewPdf(invoice)">
+              <div class="date-display">
+                <span class="formatted-date">{{ formatDate(invoice.due_date) }}</span>
+                <span class="days-remaining" [ngClass]="getDaysRemainingClass(invoice.due_date)">
+                  {{ getDaysRemainingText(invoice.due_date) }}
+                </span>
+              </div>
+            </td>
+            <td class="clickable" (click)="previewPdf(invoice)">
+              <div class="amount-info">
+                <span class="amount" style=" font-weight: 700;font-size: 18px;color: #1565c0;margin-bottom: 2px;display: block;text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);">{{ invoice.total || invoice.amount | number:'1.2-2' }}</span>
+                <span class="currency" style="font-size: 11px;color: #6c757d;font-weight: 500;">{{ invoice.currency?.code }}</span>
+              </div>
+            </td>
+            <td>
               <ion-badge [color]="getStatusColor(invoice.status)">
                 {{ invoice.status | uppercase }}
               </ion-badge>
-            </ion-col>
-          </ion-row>
-          
-          <!-- Items Preview -->
-          <ion-row *ngIf="invoice.items && invoice.items.length > 0">
-            <ion-col size="12">
-              <div class="items-preview">
-                <p class="items-label">Items:</p>
-                <ul class="items-list">
-                  <li *ngFor="let item of invoice.items">
-                    {{ item.description }} ({{ item.quantity }} × {{ item.unit_price | number:'1.2-2' }})
-                  </li>
-                </ul>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredInvoices().length === 0">
+            <td colspan="6" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="document-outline" class="empty-icon"></ion-icon>
+                <h2>No invoices found</h2>
+                <p>Create your first invoice to get started</p>
+                <ion-button (click)="isAdding = true">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Create Invoice
+                </ion-button>
               </div>
-            </ion-col>
-          </ion-row>
-
-          <!-- Actions -->
-          <ion-row class="action-buttons">
-            <ion-col>
-              <ion-button size="small" fill="outline" (click)="editInvoice(invoice)">
-                <ion-icon name="create" slot="start"></ion-icon>
-                Edit
-              </ion-button>
-              <ion-button size="small" fill="outline" (click)="previewPdf(invoice)">
-                <ion-icon name="eye" slot="start"></ion-icon>
-                Preview
-              </ion-button>
-              <ion-button size="small" fill="outline" (click)="downloadPdf(invoice)">
-                <ion-icon name="download" slot="start"></ion-icon>
-                Download
-              </ion-button>
-              <ion-button size="small" fill="outline" (click)="sendInvoice(invoice)" *ngIf="invoice.status === 'draft' || invoice.status === 'unpaid'">
-                <ion-icon name="mail" slot="start"></ion-icon>
-                Send
-              </ion-button>
-              <ion-button size="small" color="danger" fill="outline" (click)="deleteInvoice(invoice)">
-                <ion-icon name="trash" slot="start"></ion-icon>
-                Delete
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
-
-    <div *ngIf="getFilteredInvoices().length === 0" class="empty-state">
-      <ion-icon name="document-outline" class="empty-icon"></ion-icon>
-      <h2>No invoices found</h2>
-      <p>Create your first invoice to get started</p>
-      <ion-button (click)="isAdding = true">
-        <ion-icon name="add" slot="start"></ion-icon>
-        Create Invoice
-      </ion-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -268,6 +327,4 @@
       </ion-card-content>
     </ion-card>
   </div>
-
-
 </ion-content>

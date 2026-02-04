@@ -37,6 +37,52 @@
 
 .form-card {
   margin: 16px;
+
+  // Form Label Styling - Fixed labels that stay visible
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    --min-height: 60px;
+    margin-bottom: 16px;
+    --border-radius: 8px;
+    --background: #f8f9fa;
+    --border-color: #e1e5e9;
+
+    ion-label {
+      position: static !important;
+      transform: none !important;
+      font-weight: 600 !important;
+      font-size: 0.9rem !important;
+      color: #37474f !important;
+      margin-bottom: 8px !important;
+      display: block;
+    }
+
+    ion-input, ion-select, ion-textarea {
+      --padding-start: 16px !important;
+      --padding-end: 16px !important;
+      --padding-top: 12px !important;
+      --padding-bottom: 12px !important;
+      font-size: 1rem !important;
+      color: #1a1a1a;
+      --placeholder-color: #9e9e9e;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e1e5e9;
+    }
+
+    ion-select {
+      --padding-start: 16px !important;
+    }
+  }
+
+  ion-item:focus-within {
+    --border-color: var(--ion-color-primary);
+
+    ion-input, ion-select, ion-textarea {
+      border-color: var(--ion-color-primary);
+    }
+  }
 }
 
 .form-actions {

@@ -12,67 +12,200 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <ion-toolbar *ngIf="!isAdding && !editingExpense">
-    <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search expenses..." animated></ion-searchbar>
+  <!-- Bulk Actions Toolbar -->
+  <ion-toolbar *ngIf="selectedExpenses.length > 0" color="warning">
+    <ion-buttons slot="start">
+      <ion-button (click)="clearSelection()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ selectedExpenses.length }} expense(s) selected</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="bulkEdit()" *ngIf="selectedExpenses.length === 1">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="bulkDelete()">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filters Toolbar -->
+  <ion-toolbar *ngIf="!isAdding && !editingExpense && selectedExpenses.length === 0" class="filters-toolbar">
+    <ion-grid class="filters-grid">
+      <ion-row class="filters-row">
+        <ion-col size="12" size-md="4">
+          <ion-searchbar [(ngModel)]="searchTerm" placeholder="Search expenses..." animated class="search-bar" (ionInput)="onSearch($event)"></ion-searchbar>
+        </ion-col>
+        <ion-col size="6" size-md="2">
+          <ion-select [(ngModel)]="paidThroughFilter" placeholder="Paid Through" class="filter-select" (ionChange)="applyFilters()">
+            <ion-select-option value="">All</ion-select-option>
+            <ion-select-option *ngFor="let option of paidThroughOptions" [value]="option.value">
+              {{ option.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-col>
+        <ion-col size="6" size-md="2">
+          <ion-input type="date" [(ngModel)]="dateFromFilter" placeholder="From Date" class="date-filter" (ionChange)="applyFilters()"></ion-input>
+        </ion-col>
+        <ion-col size="6" size-md="2">
+          <ion-input type="date" [(ngModel)]="dateToFilter" placeholder="To Date" class="date-filter" (ionChange)="applyFilters()"></ion-input>
+        </ion-col>
+        <ion-col size="6" size-md="2" class="ion-text-end">
+          <ion-button fill="clear" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+            <ion-icon name="close-circle" slot="start"></ion-icon>
+            Clear Filters
+          </ion-button>
+          <ion-button [fill]="showCategoryFilter ? 'solid' : 'clear'" (click)="toggleCategoryFilter()">
+            <ion-icon name="filter" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-toolbar>
+
+  <!-- Category Filter Chips -->
+  <ion-toolbar *ngIf="showCategoryFilter">
+    <ion-chip [color]="!categoryFilter ? 'primary' : 'medium'" (click)="setCategoryFilter('')">
+      <ion-label>All</ion-label>
+    </ion-chip>
+    <!-- <ion-chip *ngFor="let category of expenseCategories" 
+             [color]="categoryFilter === category.name.toString() ? 'primary' : 'medium'"
+             (click)="setCategoryFilter(category.name.toString())"
+             class="category-chip">
+      <ion-label>{{ category.name }}</ion-label>
+      <ion-buttons slot="end" (click)="$event.stopPropagation()">
+        <ion-button fill="clear" size="small" (click)="editCategory(category)" *ngIf="category.user_id">
+          <ion-icon name="create" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" color="danger" (click)="deleteCategory(category)" *ngIf="category.user_id">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-chip> -->
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Expense List -->
+  <!-- Expense Table -->
   <div *ngIf="!isAdding && !editingExpense" class="expenses-container">
-    <ion-card *ngFor="let expense of getFilteredExpenses()" class="expense-card">
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="8">
-              <h2 class="expense-category">{{ expense.category }}</h2>
-              <p class="expense-description" *ngIf="expense.description">
-                {{ expense.description }}
-              </p>
-              <p class="expense-date">
-                <ion-icon name="calendar"></ion-icon>
-                {{ expense.expense_date }}
-              </p>
-              <!-- Custom Fields Display -->
-              <div *ngIf="expense.custom_fields && getCustomFieldKeys(expense.custom_fields).length > 0" class="custom-fields-display">
-                <p class="custom-fields-label">Additional Info:</p>
-                <div class="custom-field-item" *ngFor="let field of getCustomFieldKeys(expense.custom_fields)">
-                  <strong>{{ field }}:</strong> {{ expense.custom_fields[field] }}
+    <div class="table-wrapper">
+      <table class="expenses-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <ion-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (ionChange)="toggleSelectAll($event)">
+              </ion-checkbox>
+            </th>
+            <th (click)="sortBy('category')" class="sortable">
+              Category
+              <ion-icon *ngIf="sortField === 'category'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Description</th>
+            <th (click)="sortBy('expense_date')" class="sortable">
+              Date
+              <ion-icon *ngIf="sortField === 'expense_date'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th (click)="sortBy('amount')" class="sortable">
+              Amount
+              <ion-icon *ngIf="sortField === 'amount'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
+            </th>
+            <th>Paid Through</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let expense of getFilteredExpenses()"
+              [class.selected]="isSelected(expense)"
+              (click)="onRowClick(expense, $event)">
+            <td class="checkbox-column" (click)="$event.stopPropagation()">
+              <ion-checkbox
+                [checked]="isSelected(expense)"
+                (ionChange)="toggleSelect(expense, $event)">
+              </ion-checkbox>
+            </td>
+            <td class="clickable category-column" (click)="editExpense(expense)">
+              <div class="category-info">
+                <span class="category-name">{{ expense.category?.name || expense.category }}</span>
+              </div>
+            </td>
+            <td class="clickable description-column" (click)="editExpense(expense)">
+              <div class="description-cell">
+                <span class="description-text">{{ expense.description || 'No description' }}</span>
+                <div *ngIf="expense.custom_fields && getCustomFieldKeys(expense.custom_fields).length > 0" class="custom-fields-preview">
+                  <small>{{ getCustomFieldKeys(expense.custom_fields).length }} custom field(s)</small>
                 </div>
               </div>
-            </ion-col>
-            <ion-col size="12" size-md="4" class="ion-text-end">
-              <h3 class="expense-amount">
-                {{ expense.amount | number:'1.2-2' }} {{ expense.currency?.code }}
-              </h3>
-            </ion-col>
-          </ion-row>
+            </td>
+            <td class="clickable date-column" (click)="editExpense(expense)">
+              <div class="date-info">
+                <span class="formatted-date">{{ formatDate(expense.expense_date) }}</span>
+              </div>
+            </td>
+            <td class="clickable amount-column" (click)="editExpense(expense)">
+              <div class="amount-info">
+                <span class="amount">{{ expense.amount | number:'1.2-2' }}</span>
+                <span class="currency">{{ expense.currency?.code }}</span>
+              </div>
+            </td>
+            <td class="paid-through-column">
+              <span class="paid-through">{{ expense.paid_through }}</span>
+            </td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <ion-button fill="clear" size="small" (click)="editExpense(expense); $event.stopPropagation()">
+                  <ion-icon name="create" slot="icon-only"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="deleteExpense(expense); $event.stopPropagation()">
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="getFilteredExpenses().length === 0">
+            <td colspan="7" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="cash-outline" class="empty-icon"></ion-icon>
+                <h2>No expenses found</h2>
+                <p>Track your first expense to get started</p>
+                <ion-button (click)="isAdding = true">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Create Expense
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-          <!-- Actions -->
-          <ion-row class="action-buttons">
-            <ion-col>
-              <ion-button size="small" fill="outline" (click)="editExpense(expense)">
-                <ion-icon name="create" slot="start"></ion-icon>
-                Edit
-              </ion-button>
-              <ion-button size="small" color="danger" fill="outline" (click)="deleteExpense(expense)">
-                <ion-icon name="trash" slot="start"></ion-icon>
-                Delete
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination-container">
+      <div class="pagination-controls">
+        <ion-button
+          fill="outline"
+          [disabled]="currentPage === 1"
+          (click)="previousPage()">
+          <ion-icon name="chevron-back" slot="start"></ion-icon>
+          Previous
+        </ion-button>
 
-    <div *ngIf="getFilteredExpenses().length === 0" class="empty-state">
-      <ion-icon name="cash-outline" class="empty-icon"></ion-icon>
-      <h2>No expenses found</h2>
-      <p>Track your first expense to get started</p>
-      <ion-button (click)="isAdding = true">
-        <ion-icon name="add" slot="start"></ion-icon>
-        Add Expense
-      </ion-button>
+        <span class="page-info">
+          Page {{ currentPage }} of {{ totalPages }}
+          ({{ totalExpenses }} total expenses)
+        </span>
+
+        <ion-button
+          fill="outline"
+          [disabled]="currentPage === totalPages"
+          (click)="nextPage()">
+          Next
+          <ion-icon name="chevron-forward" slot="end"></ion-icon>
+        </ion-button>
+      </div>
     </div>
   </div>
 
@@ -86,7 +219,14 @@
           <!-- Category -->
           <ion-item>
             <ion-label position="floating">Category *</ion-label>
-            <ion-input formControlName="category" placeholder="e.g., Office Supplies, Travel, etc."></ion-input>
+            <ion-select formControlName="category" placeholder="Select category" (ionChange)="onCategoryChange($event)">
+              <ion-select-option *ngFor="let category of expenseCategories" [value]="category.id">
+                {{ category.name }}
+              </ion-select-option>
+              <ion-select-option value="add-custom">
+                + Add Custom Category
+              </ion-select-option>
+            </ion-select>
           </ion-item>
 
           <!-- Amount -->
@@ -117,8 +257,19 @@
             <ion-textarea formControlName="description" rows="3"></ion-textarea>
           </ion-item>
 
+          <!-- Paid Through -->
+          <ion-item>
+            <ion-label position="floating">Paid Through *</ion-label>
+            <ion-select formControlName="paid_through" placeholder="Select payment method">
+              <ion-select-option *ngFor="let option of paidThroughOptions" [value]="option.value">
+                {{ option.label }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+
           <!-- Custom Fields Section -->
-          <div class="custom-fields-section">
+
+          <div class="custom-fields-section" *ngIf="isAdmin">
             <h3>Custom Fields</h3>
             <p class="custom-fields-hint">Add any additional information you need to track</p>
             
@@ -130,13 +281,13 @@
                       <ion-col size="12" size-md="5">
                         <ion-item>
                           <ion-label position="floating">Field Name</ion-label>
-                          <ion-input [(ngModel)]="field.key" [ngModelOptions]="{standalone: true}" placeholder="e.g., Vendor, Receipt #"></ion-input>
+                          <ion-input [(ngModel)]="field.key" [ngModelOptions]="{standalone: true}" name="field-key-{{i}}" id="field-key-{{i}}" placeholder="e.g., Vendor, Receipt #"></ion-input>
                         </ion-item>
                       </ion-col>
                       <ion-col size="12" size-md="5">
                         <ion-item>
                           <ion-label position="floating">Value</ion-label>
-                          <ion-input [(ngModel)]="field.value" [ngModelOptions]="{standalone: true}" placeholder="Enter value"></ion-input>
+                          <ion-input [(ngModel)]="field.value" [ngModelOptions]="{standalone: true}" name="field-value-{{i}}" id="field-value-{{i}}" placeholder="Enter value"></ion-input>
                         </ion-item>
                       </ion-col>
                       <ion-col size="12" size-md="2" class="ion-text-center">
