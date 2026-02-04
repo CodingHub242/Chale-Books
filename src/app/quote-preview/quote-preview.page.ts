@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { addIcons } from 'ionicons';
-import { arrowBack, send, mail, document } from 'ionicons/icons';
+import { arrowBack, send, mail, document, informationCircle } from 'ionicons/icons';
 
 @Component({
   selector: 'app-quote-preview',
@@ -42,7 +42,7 @@ export class QuotePreviewPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ arrowBack, send, mail,document });
+    addIcons({ arrowBack, send, mail,document,informationCircle });
     this.initForm();
   }
 
