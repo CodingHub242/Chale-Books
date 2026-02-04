@@ -76,9 +76,11 @@ export class QuotePreviewPage implements OnInit, OnDestroy {
 
   async loadQuote() {
     const loading = await this.presentLoading('Loading quote...');
-    this.api.getQuote(this.quoteId).subscribe({
+    //this.api.getQuote(this.quoteId)
+    this.api.getQuotes().subscribe({
       next: (data: any) => {
-        this.quote = data;
+       // this.quote = data;
+       this.quote = data.find((q: any) => q.id === this.quoteId);
         if (this.quote) {
           // Pre-fill email subject
           this.emailForm.patchValue({
