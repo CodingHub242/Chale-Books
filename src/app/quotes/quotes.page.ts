@@ -89,6 +89,10 @@ export class QuotesPage implements OnInit {
     }
   }
 
+  ionviewWillEnter() {
+    this.loadQuotes();
+  }
+
   initForm() {
     this.quoteForm = this.fb.group({
       client_id: ['', Validators.required],
