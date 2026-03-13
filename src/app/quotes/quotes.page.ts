@@ -403,10 +403,10 @@ export class QuotesPage implements OnInit {
     this.emailForm.patchValue({
       to: clientEmail,
       subject: 'Quote #' + quote.id + ' from Chale App',
-      message: 'Dear ' + clientName + ',\n\n' +
-        'Thank you for your interest in our services. Please find attached the quote #' + quote.id + ' for your review.\n\n' +
+      message: 'Dear ' + clientName + ',\n' +
+        'Thank you for your interest in our services. Please find attached the quote #' + quote.id + ' for your review.\n' +
         'Please do not hesitate to contact us if you have any questions or need further clarification.\n\n' +
-        'We look forward to hearing from you.\n\n' +
+        'We look forward to hearing from you.\n' +
         'Best regards,\n' +
         'Chale App'
     });
