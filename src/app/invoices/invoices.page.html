@@ -140,7 +140,7 @@
                 {{ invoice.status | uppercase }}
               </ion-badge>
             </td>
-            <td>
+            <td class="actions-column" (click)="$event.stopPropagation()">
               <ion-button (click)="editInvoice(invoice)" color="secondary" size="small">
                 <ion-icon name="create-outline" slot="icon-only"></ion-icon>
               </ion-button>
