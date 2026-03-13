@@ -163,18 +163,15 @@ export class QuotesPage implements OnInit {
   }
 
   applyTemplate(template: any) {
-    // Set currency from template
     this.quoteForm.patchValue({
       currency_id: template.currency_id,
       notes: template.notes
     });
 
-    // Clear existing items
     while (this.items.length > 0) {
       this.items.removeAt(0);
     }
 
-    // Add template items
     template.items.forEach((item: any) => {
       this.items.push(this.fb.group({
         description: [item.description, Validators.required],
@@ -185,7 +182,6 @@ export class QuotesPage implements OnInit {
       }));
     });
 
-    // Switch to add mode
     this.isAdding = true;
     this.presentToast('Template applied! Please select a client and expiry date.', 'success');
   }
@@ -401,7 +397,7 @@ export class QuotesPage implements OnInit {
     // Pre-fill email form with quote details
     const clientEmail = quote.client?.email || '';
     const clientName = quote.client?.name || 'Valued Customer';
-    const amount = quote.total || quote.amount || 0;
+    const amount = parseFloat(quote.total || quote.amount || 0);
     const currencyCode = quote.currency?.code || '$';
     
     this.emailForm.patchValue({
