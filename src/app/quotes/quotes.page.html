@@ -298,7 +298,7 @@
             <ion-label position="floating">Currency *</ion-label>
             <ion-select formControlName="currency_id" placeholder="Select currency">
               <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
-                {{ currency.code }} - {{ currency.name }}}
+                {{ currency.code }} - {{ currency.name }}
               </ion-select-option>
             </ion-select>
           </ion-item>
