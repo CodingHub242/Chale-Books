@@ -14,7 +14,7 @@ import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, mail, document, close, eye, download, checkmark, cash, arrowBack, arrowUp, arrowDown, filter, send, paperPlane } from 'ionicons/icons';
+import { add, trash, create, mail, document, close, eye, download, checkmark, cash, arrowBack, arrowUp, arrowDown, filter, send, paperPlane, mailOutline, createOutline, trashOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-invoices',
@@ -66,7 +66,7 @@ export class InvoicesPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add, trash, arrowBack, create, mail, document, close, eye, download, checkmark, cash, arrowUp, arrowDown, filter, send, paperPlane });
+    addIcons({ add, trash, arrowBack, create, mail,mailOutline,createOutline,trashOutline, document, close, eye, download, checkmark, cash, arrowUp, arrowDown, filter, send, paperPlane });
     this.initForm();
   }
 
