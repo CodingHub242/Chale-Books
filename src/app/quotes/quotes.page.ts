@@ -405,10 +405,6 @@ export class QuotesPage implements OnInit {
       subject: 'Quote #' + quote.id + ' from Chale App',
       message: 'Dear ' + clientName + ',\n\n' +
         'Thank you for your interest in our services. Please find attached the quote #' + quote.id + ' for your review.\n\n' +
-        'Quote Details:\n' +
-        '- Quote Number: ' + quote.id + '\n' +
-        '- Amount: ' + currencyCode + ' ' + amount.toFixed(2) + '\n' +
-        '- Valid Until: ' + this.formatExpiryDate(quote.expiry_date) + '\n\n' +
         'Please do not hesitate to contact us if you have any questions or need further clarification.\n\n' +
         'We look forward to hearing from you.\n\n' +
         'Best regards,\n' +
