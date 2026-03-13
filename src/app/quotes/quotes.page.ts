@@ -48,7 +48,7 @@ export class QuotesPage implements OnInit {
   totalQuotes = 0;
   isLoading = false;
   currentYear = new Date().getFullYear();
-  showEmailPreview = false;
+  showEmailPreview = true;
 
   // Selection and bulk actions
   selectedQuotes: any[] = [];
