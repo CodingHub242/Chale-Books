@@ -318,10 +318,10 @@ export class InvoicesPage implements OnInit {
       to: clientEmail,
       subject: 'Invoice #' + invoice.invoice_number + ' from Chale App',
       message: 'Dear ' + clientName + ',\n\n' +
-        'Thank you for your business. Please find attached Invoice #' + invoice.invoice_number + ' for ' + currencyCode + ' ' + amount.toFixed(2) + '.\n\n' +
-        'Please make payment by the due date to avoid any late fees.\n\n' +
-        'If you have any questions regarding this invoice, please contact us.\n\n' +
-        'Thank you for your continued business.\n\n' +
+        'Thank you for your business. Please find attached Invoice #' + invoice.invoice_number + ' for ' + currencyCode + ' ' + amount.toFixed(2) + '.\n' +
+        'Please make payment by the due date to avoid any late fees.\n' +
+        'If you have any questions regarding this invoice, please contact us.\n' +
+        'Thank you for your continued business.\n' +
         'Best regards,\n' +
         'Chale App'
     });
