@@ -26,7 +26,7 @@ import { add, trash, create, mail, document, close, eye, download, checkmark, ca
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonFab, IonFabButton, IonIcon, IonSelect, IonSelectOption, IonTextarea,
     IonButtons, IonBackButton, IonMenuButton, IonGrid, IonRow, IonCol, IonBadge,
-    IonSearchbar, IonCheckbox, IonChip, IonModal
+    IonSearchbar, IonCheckbox, IonChip, IonModal, IonProgressBar
   ]
 })
 export class InvoicesPage implements OnInit {
