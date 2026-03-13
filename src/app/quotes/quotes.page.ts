@@ -7,7 +7,7 @@ import {
   IonSelect, IonSelectOption, IonTextarea, IonButtons, IonBackButton, IonGrid,
   IonRow, IonCol, IonBadge, IonModal, IonSearchbar, ToastController, LoadingController,
   AlertController,
-  IonMenuButton, IonCheckbox, IonChip
+  IonMenuButton, IonCheckbox, IonChip, IonProgressBar
 } from '@ionic/angular/standalone';
 import { forkJoin } from 'rxjs';
 import {Location} from '@angular/common';
@@ -15,7 +15,7 @@ import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, mail, document, close, eye, download, checkmark, arrowBack, arrowUp, arrowDown, filter } from 'ionicons/icons';
+import { add, trash, create, mail, document, close, eye, download, checkmark, arrowBack, arrowUp, arrowDown, filter, send, paperPlane } from 'ionicons/icons';
 
 @Component({
   selector: 'app-quotes',
@@ -47,9 +47,20 @@ export class QuotesPage implements OnInit {
   totalPages = 1;
   totalQuotes = 0;
   isLoading = false;
+  currentYear = new Date().getFullYear();
+  showEmailPreview = false;
 
   // Selection and bulk actions
   selectedQuotes: any[] = [];
+  
+  // Email Modal properties
+  showEmailModal = false;
+  emailQuote: any = null;
+  emailForm!: FormGroup;
+  isSendingEmail = false;
+  emailSendingProgress = 0;
+  emailSent = false;
+  pdfBlob: Blob | null = null;
   
   // Filtering and sorting
   statusFilter = '';
@@ -67,7 +78,7 @@ export class QuotesPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add, arrowBack, trash, create, mail, document, close, eye, download, checkmark, arrowUp, arrowDown, filter });
+    addIcons({ add, arrowBack, trash, create, mail, document, close, eye, download, checkmark, arrowUp, arrowDown, filter, send, paperPlane });
     this.initForm();
   }
 
@@ -105,6 +116,15 @@ export class QuotesPage implements OnInit {
       status: ['draft'],
       notes: [''],
       items: this.fb.array([this.createItem()])
+    });
+
+    // Initialize email form
+    this.emailForm = this.fb.group({
+      to: ['', [Validators.required, Validators.email]],
+      cc: [''],
+      subject: ['', Validators.required],
+      message: ['', Validators.required],
+      attachPdf: [true]
     });
   }
 
@@ -211,7 +231,6 @@ export class QuotesPage implements OnInit {
 
     this.api.getQuotes(page, this.perPage, this.searchTerm || undefined).subscribe({
       next: (response: any) => {
-        // Assuming the API returns paginated data with data, current_page, last_page, total
         this.quotes = response.data || response;
         this.currentPage = response.current_page || page;
         this.totalPages = response.last_page || 1;
@@ -288,7 +307,6 @@ export class QuotesPage implements OnInit {
   editQuote(quote: any) {
     this.editingQuote = quote;
 
-    // Populate form with quote data
     this.quoteForm.patchValue({
       client_id: quote.client_id,
       currency_id: quote.currency_id,
@@ -301,12 +319,10 @@ export class QuotesPage implements OnInit {
       notes: quote.notes
     });
 
-    // Clear existing items
     while (this.items.length) {
       this.items.removeAt(0);
     }
 
-    // Add quote items or create one empty item
     if (quote.items && quote.items.length > 0) {
       quote.items.forEach((item: any) => {
         this.items.push(this.fb.group({
@@ -375,18 +391,107 @@ export class QuotesPage implements OnInit {
   }
 
   async sendQuote(quote: any) {
-    const loading = await this.presentLoading('Sending quote...');
-    this.api.sendQuote(quote.id).subscribe({
-      next: async () => {
-        loading.dismiss();
-        await this.presentToast('Quote sent successfully!', 'success');
-        this.loadQuotes();
+    // Open email modal instead of directly sending
+    this.emailQuote = quote;
+    this.emailSent = false;
+    this.isSendingEmail = false;
+    this.emailSendingProgress = 0;
+    this.pdfBlob = null;
+
+    // Pre-fill email form with quote details
+    const clientEmail = quote.client?.email || '';
+    const clientName = quote.client?.name || 'Valued Customer';
+    const amount = quote.total || quote.amount || 0;
+    const currencyCode = quote.currency?.code || '$';
+    
+    this.emailForm.patchValue({
+      to: clientEmail,
+      subject: 'Quote #' + quote.id + ' from Your Company',
+      message: 'Dear ' + clientName + ',\n\n' +
+        'Thank you for your interest in our services. Please find attached the quote #' + quote.id + ' for your review.\n\n' +
+        'Quote Details:\n' +
+        '- Quote Number: ' + quote.id + '\n' +
+        '- Amount: ' + currencyCode + ' ' + amount.toFixed(2) + '\n' +
+        '- Valid Until: ' + this.formatExpiryDate(quote.expiry_date) + '\n\n' +
+        'Please do not hesitate to contact us if you have any questions or need further clarification.\n\n' +
+        'We look forward to hearing from you.\n\n' +
+        'Best regards,\n' +
+        'Your Company Name'
+    });
+
+    // Load PDF for attachment
+    this.loadPdfForEmail(quote.id);
+    
+    this.showEmailModal = true;
+  }
+
+  async loadPdfForEmail(quoteId: number) {
+    this.api.downloadQuotePdf(quoteId).subscribe({
+      next: (blob: Blob) => {
+        this.pdfBlob = blob;
       },
-      error: async (error) => {
-        loading.dismiss();
-        await this.presentToast('Error sending quote: ' + error.message, 'danger');
+      error: async (error: any) => {
+        console.error('Error loading PDF for email:', error);
       }
     });
+  }
+
+  async simulateSendEmail() {
+    if (!this.emailForm.valid) {
+      await this.presentToast('Please fill all required fields', 'warning');
+      return;
+    }
+
+    this.isSendingEmail = true;
+    this.emailSendingProgress = 0;
+
+    // Simulate email sending with progress
+    const progressInterval = setInterval(() => {
+      this.emailSendingProgress += Math.random() * 15;
+      if (this.emailSendingProgress >= 100) {
+        this.emailSendingProgress = 100;
+        clearInterval(progressInterval);
+        
+        // Mark as sent
+        this.emailSent = true;
+        this.isSendingEmail = false;
+        
+        // Update quote status to sent
+        if (this.emailQuote && this.emailQuote.status === 'draft') {
+          this.emailQuote.status = 'sent';
+          this.loadQuotes();
+        }
+      }
+    }, 300);
+  }
+
+  async downloadAttachedPdf() {
+    if (this.pdfBlob) {
+      const url = window.URL.createObjectURL(this.pdfBlob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = 'quote-' + (this.emailQuote?.id || 'document') + '.pdf';
+      link.click();
+      window.URL.revokeObjectURL(url);
+      await this.presentToast('PDF downloaded!', 'success');
+    } else if (this.emailQuote) {
+      // Fallback: download from API
+      this.downloadPdf(this.emailQuote);
+    }
+  }
+
+  closeEmailModal() {
+    this.showEmailModal = false;
+    this.emailQuote = null;
+    this.emailForm.reset();
+    this.pdfBlob = null;
+    this.emailSent = false;
+    this.isSendingEmail = false;
+    this.emailSendingProgress = 0;
+  }
+
+  togglePreview() {
+    this.showEmailPreview = !this.showEmailPreview;
   }
 
   async convertToInvoice(quote: any) {
@@ -417,7 +522,7 @@ export class QuotesPage implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const link = window.document.createElement('a');
         link.href = url;
-        link.download = `quote-${quote.id}.pdf`;
+        link.download = 'quote-' + quote.id + '.pdf';
         link.click();
         window.URL.revokeObjectURL(url);
         this.presentToast('PDF downloaded successfully!', 'success');
@@ -460,9 +565,8 @@ export class QuotesPage implements OnInit {
     const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getFullYear();
     
-    // Add ordinal suffix to day
     const suffix = this.getDaySuffix(day);
-    return `${day}${suffix} ${month},${year}`;
+    return day + suffix + ' ' + month + ', ' + year;
   }
 
   formatShowDate(dateStr: string): string {
@@ -472,9 +576,8 @@ export class QuotesPage implements OnInit {
     const month = date.toLocaleString('default', { month: 'long' });
     const year = date.getFullYear();
     
-    // Add ordinal suffix to day
     const suffix = this.getDaySuffix(day);
-    return `${day}${suffix} ${month},${year}`;
+    return day + suffix + ' ' + month + ', ' + year;
   }
 
   getDaySuffix(day: number): string {
@@ -512,7 +615,7 @@ export class QuotesPage implements OnInit {
     } else if (days === 1) {
       return '1 day left';
     } else {
-      return `${days} days left`;
+      return days + ' days left';
     }
   }
 
@@ -544,15 +647,12 @@ export class QuotesPage implements OnInit {
   }
 
   onSearchChange() {
-    // Reset to first page when searching
     this.currentPage = 1;
-    //this.loadQuotes(1);
   }
 
   getFilteredQuotes() {
     let filtered = this.quotes;
 
-    // Apply search filter
     if (this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(quote => {
@@ -566,30 +666,25 @@ export class QuotesPage implements OnInit {
       });
     }
 
-    // Apply status filter
     if (this.statusFilter) {
       filtered = filtered.filter(quote => quote.status === this.statusFilter);
     }
 
-    // Apply sorting
     if (this.sortField) {
       filtered = [...filtered].sort((a: any, b: any) => {
         let aVal: any = a[this.sortField];
         let bVal: any = b[this.sortField];
 
-        // Handle client name lookup
         if (this.sortField === 'client_name') {
           aVal = a.client?.name || '';
           bVal = b.client?.name || '';
         }
 
-        // Handle numeric values
         if (this.sortField === 'total') {
           aVal = a.total || a.amount || 0;
           bVal = b.total || b.amount || 0;
         }
 
-        // Compare
         if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
         if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
         return 0;
@@ -657,7 +752,6 @@ export class QuotesPage implements OnInit {
 
   // Row click handler
   onRowClick(quote: any, event: Event) {
-    // If clicking on checkbox, don't trigger row click
     if ((event.target as HTMLElement).tagName === 'ION-CHECKBOX') {
       return;
     }
@@ -703,7 +797,7 @@ export class QuotesPage implements OnInit {
   async bulkDelete() {
     const alert = await this.alertController.create({
       header: 'Confirm Delete',
-      message: `Are you sure you want to delete ${this.selectedQuotes.length} quote(s)?`,
+      message: 'Are you sure you want to delete ' + this.selectedQuotes.length + ' quote(s)?',
       buttons: [
         {
           text: 'Cancel',
@@ -715,7 +809,6 @@ export class QuotesPage implements OnInit {
           handler: async () => {
             const loading = await this.presentLoading('Deleting quotes...');
             
-            // Delete quotes one by one
             const deleteCalls = this.selectedQuotes.map(quote => 
               this.api.deleteQuote(quote.id)
             );

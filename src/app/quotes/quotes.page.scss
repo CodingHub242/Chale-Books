@@ -1065,3 +1065,527 @@
     }
   }
 }
+
+// Email Modal Styles
+.email-modal-content {
+  --background: #f5f7fa;
+}
+
+// Quote Info Card in Email Modal
+.quote-info-card {
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  ion-card-content {
+    padding: 20px;
+  }
+
+  .quote-header-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .quote-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .quote-details {
+    flex: 1;
+    color: white;
+
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+  }
+
+  .quote-amount {
+    text-align: right;
+
+    .amount {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .status-badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+
+      &.draft {
+        background: rgba(255, 193, 7, 0.9);
+        color: #333;
+      }
+
+      &.sent {
+        background: rgba(25, 118, 210, 0.9);
+        color: white;
+      }
+    }
+  }
+}
+
+// Email Compose Form
+.email-compose-form {
+  padding: 0 16px 16px;
+
+  .email-field-group {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .email-field {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      ion-label {
+        width: 60px;
+        font-weight: 600;
+        color: #666;
+        font-size: 14px;
+      }
+
+      ion-input {
+        flex: 1;
+        --padding-start: 12px;
+      }
+    }
+  }
+
+  // Attachment Section
+  .attachment-section {
+    margin-bottom: 16px;
+
+    .attachment-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+
+      &:hover {
+        border-color: var(--ion-color-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .attachment-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+      }
+
+      .attachment-info {
+        flex: 1;
+
+        .attachment-name {
+          display: block;
+          font-weight: 600;
+          color: #333;
+          font-size: 14px;
+        }
+
+        .attachment-size {
+          font-size: 12px;
+          color: #999;
+        }
+      }
+
+      .download-icon {
+        color: var(--ion-color-primary);
+        font-size: 20px;
+      }
+    }
+  }
+
+  // Message Editor
+  .message-editor {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    ion-label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .rich-text-editor {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+
+      .editor-toolbar {
+        display: flex;
+        gap: 4px;
+        padding: 8px;
+        background: #f5f5f5;
+        border-bottom: 1px solid #e0e0e0;
+
+        .toolbar-divider {
+          width: 1px;
+          background: #ddd;
+          margin: 0 8px;
+        }
+
+        ion-button {
+          --padding-start: 8px;
+          --padding-end: 8px;
+        }
+      }
+
+      .message-textarea {
+        --padding: 16px;
+        min-height: 200px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+    }
+  }
+
+  // Email Preview Section
+  .email-preview-section {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      background: #f5f5f5;
+      cursor: pointer;
+      font-weight: 600;
+      color: #333;
+
+      .toggle-icon {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+      }
+
+      &:active {
+        background: #eeeeee;
+      }
+    }
+
+    .preview-content {
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .email-preview-frame {
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+      .preview-header-section {
+        margin-bottom: 20px;
+
+        .preview-row {
+          display: flex;
+          margin-bottom: 8px;
+          font-size: 13px;
+
+          strong {
+            width: 60px;
+            color: #666;
+          }
+
+          span {
+            color: #333;
+          }
+        }
+
+        .preview-divider {
+          height: 1px;
+          background: #e0e0e0;
+          margin: 16px 0;
+        }
+      }
+
+      .preview-body {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #333;
+        white-space: pre-wrap;
+        margin-bottom: 20px;
+      }
+
+      .preview-attachment {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        margin-bottom: 20px;
+
+        ion-icon {
+          color: #666;
+        }
+
+        span {
+          font-size: 13px;
+          color: #333;
+        }
+      }
+
+      .preview-footer {
+        padding-top: 16px;
+        border-top: 1px solid #e0e0e0;
+        font-size: 12px;
+        color: #999;
+        text-align: center;
+
+        p {
+          margin: 4px 0;
+        }
+      }
+    }
+  }
+}
+
+// Email Success State
+.email-success-state {
+  padding: 40px 20px;
+  text-align: center;
+
+  .success-animation {
+    margin-bottom: 24px;
+
+    .success-icon {
+      font-size: 80px;
+      color: var(--ion-color-success);
+      animation: scaleIn 0.5s ease;
+    }
+  }
+
+  h2 {
+    color: #333;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .success-details {
+    background: #f5f5f5;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      ion-icon {
+        font-size: 20px;
+        color: var(--ion-color-primary);
+      }
+
+      span {
+        font-size: 14px;
+        color: #333;
+      }
+    }
+  }
+
+  .success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0 20px;
+
+    ion-button {
+      --border-radius: 8px;
+      font-weight: 600;
+      min-height: 48px;
+    }
+  }
+}
+
+// Email Sending State
+.email-sending-state {
+  padding: 60px 20px;
+  text-align: center;
+
+  .sending-animation {
+    margin-bottom: 32px;
+    position: relative;
+
+    .envelope {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bounce 1s ease infinite;
+
+      .envelope-icon {
+        font-size: 48px;
+        color: white;
+      }
+    }
+
+    .sending-particles {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      span {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: var(--ion-color-primary);
+        border-radius: 50%;
+        animation: particle 1.5s ease infinite;
+
+        &:nth-child(1) {
+          animation-delay: 0s;
+          transform: translate(-30px, -30px);
+        }
+
+        &:nth-child(2) {
+          animation-delay: 0.3s;
+          transform: translate(30px, -30px);
+        }
+
+        &:nth-child(3) {
+          animation-delay: 0.6s;
+          transform: translate(0, -40px);
+        }
+      }
+    }
+  }
+
+  h2 {
+    color: #333;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  ion-progress-bar {
+    max-width: 300px;
+    margin: 0 auto 12px;
+  }
+
+  .progress-text {
+    font-size: 14px;
+    color: var(--ion-color-primary);
+    font-weight: 600;
+  }
+}
+
+// Animations
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes particle {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, -60px) scale(0);
+  }
+}
+
+// Actions column header
+.actions-header {
+  width: 160px;
+  text-align: center;
+}

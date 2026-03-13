@@ -117,6 +117,7 @@
               <ion-icon *ngIf="sortField === 'total'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
             </th>
             <th>Status</th>
+            <th class="actions-header">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -169,9 +170,29 @@
                 {{ quote.status | uppercase }}
               </ion-badge>
             </td>
+            <td class="actions-column" (click)="$event.stopPropagation()">
+              <ion-button size="small" fill="clear" (click)="previewPdf(quote)" title="Preview">
+                <ion-icon name="eye" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button size="small" fill="clear" (click)="downloadPdf(quote)" title="Download PDF">
+                <ion-icon name="download" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button size="small" fill="clear" color="primary" (click)="sendQuote(quote)" title="Send Email" *ngIf="quote.status === 'draft'">
+                <ion-icon name="mail" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button size="small" fill="clear" color="success" (click)="convertToInvoice(quote)" title="Convert to Invoice" *ngIf="quote.status === 'accepted'">
+                <ion-icon name="document" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button size="small" fill="clear" color="medium" (click)="editQuote(quote)" title="Edit">
+                <ion-icon name="create" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button size="small" fill="clear" color="danger" (click)="deleteQuote(quote)" title="Delete">
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
+            </td>
           </tr>
           <tr *ngIf="getFilteredQuotes().length === 0">
-            <td colspan="10" class="empty-row">
+            <td colspan="11" class="empty-row">
               <div class="empty-state">
                 <ion-icon name="document-outline" class="empty-icon"></ion-icon>
                 <h2>No quotes found</h2>
@@ -277,7 +298,7 @@
             <ion-label position="floating">Currency *</ion-label>
             <ion-select formControlName="currency_id" placeholder="Select currency">
               <ion-select-option *ngFor="let currency of currencies" [value]="currency.id">
-                {{ currency.code }} - {{ currency.name }}
+                {{ currency.code }} - {{ currency.name }}}
               </ion-select-option>
             </ion-select>
           </ion-item>
@@ -424,4 +445,224 @@
       </ion-card-content>
     </ion-card>
   </div>
+
+  <!-- Email Send Modal -->
+  <ion-modal [isOpen]="showEmailModal" (didDismiss)="closeEmailModal()" [breakpoints]="[0.1, 0.5, 0.9]" [initialBreakpoint]="0.9">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-buttons slot="start">
+            <ion-button (click)="closeEmailModal()">
+              <ion-icon name="close" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>
+            <ion-icon name="paperPlane" slot="start"></ion-icon>
+            Send Quote via Email
+          </ion-title>
+          <ion-buttons slot="end" *ngIf="!emailSent && !isSendingEmail">
+            <ion-button (click)="simulateSendEmail()" [disabled]="!emailForm.valid" strong>
+              <ion-icon name="send" slot="start"></ion-icon>
+              Send
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="email-modal-content" *ngIf="emailQuote">
+        <!-- Success State -->
+        <div class="email-success-state" *ngIf="emailSent">
+          <div class="success-animation">
+            <ion-icon name="checkmark-circle" class="success-icon"></ion-icon>
+          </div>
+          <h2>Quote Sent Successfully!</h2>
+          <p>The quote has been sent to <strong>{{ emailForm.get('to')?.value }}</strong></p>
+          
+          <div class="success-details">
+            <div class="detail-item">
+              <ion-icon name="document"></ion-icon>
+              <span>Quote #{{ emailQuote.id }}</span>
+            </div>
+            <div class="detail-item">
+              <ion-icon name="person"></ion-icon>
+              <span>{{ emailQuote.client?.name }}</span>
+            </div>
+            <div class="detail-item">
+              <ion-icon name="pricetag"></ion-icon>
+              <span>{{ emailQuote.currency?.code || '
+ }} {{ emailQuote.total || emailQuote.amount | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="success-actions">
+            <ion-button expand="block" (click)="downloadAttachedPdf()">
+              <ion-icon name="download" slot="start"></ion-icon>
+              Download PDF
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="closeEmailModal()">
+              Close
+            </ion-button>
+          </div>
+        </div>
+
+        <!-- Sending State -->
+        <div class="email-sending-state" *ngIf="isSendingEmail">
+          <div class="sending-animation">
+            <div class="envelope">
+              <ion-icon name="mail" class="envelope-icon"></ion-icon>
+            </div>
+            <div class="sending-particles">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <h2>Sending Quote...</h2>
+          <p>Please wait while we send your quote to {{ emailForm.get('to')?.value }}</p>
+          
+          <ion-progress-bar [value]="emailSendingProgress / 100" color="primary" type="indeterminate"></ion-progress-bar>
+          <span class="progress-text">{{ emailSendingProgress | number:'1.0-0' }}%</span>
+        </div>
+
+        <!-- Email Composition Form -->
+        <div class="email-compose-form" *ngIf="!emailSent && !isSendingEmail">
+          <!-- Quote Info Card -->
+          <ion-card class="quote-info-card">
+            <ion-card-content>
+              <div class="quote-header-info">
+                <div class="quote-avatar">
+                  <ion-icon name="document-text" *ngIf="!emailQuote.client?.name"></ion-icon>
+                  <span *ngIf="emailQuote.client?.name">{{ emailQuote.client?.name?.charAt(0) }}</span>
+                </div>
+                <div class="quote-details">
+                  <h3>Quote #{{ emailQuote.id }}</h3>
+                  <p>{{ emailQuote.client?.name || 'No client' }}</p>
+                </div>
+                <div class="quote-amount">
+                  <span class="amount">{{ emailQuote.currency?.code || '
+ }} {{ emailQuote.total || emailQuote.amount | number:'1.2-2' }}</span>
+                  <span class="status-badge" [class]="emailQuote.status">{{ emailQuote.status }}</span>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Email Fields -->
+          <form [formGroup]="emailForm" (ngSubmit)="simulateSendEmail()">
+            <div class="email-field-group">
+              <div class="email-field">
+                <ion-label>To:</ion-label>
+                <ion-input type="email" formControlName="to" placeholder="recipient@example.com"></ion-input>
+              </div>
+              
+              <div class="email-field">
+                <ion-label>Cc:</ion-label>
+                <ion-input type="email" formControlName="cc" placeholder="cc@example.com"></ion-input>
+              </div>
+              
+              <div class="email-field">
+                <ion-label>Subject:</ion-label>
+                <ion-input type="text" formControlName="subject" placeholder="Email subject"></ion-input>
+              </div>
+            </div>
+
+            <!-- Attachment Section -->
+            <div class="attachment-section">
+              <div class="attachment-card" (click)="downloadAttachedPdf()">
+                <div class="attachment-icon">
+                  <ion-icon name="document"></ion-icon>
+                </div>
+                <div class="attachment-info">
+                  <span class="attachment-name">Quote-{{ emailQuote.id }}.pdf</span>
+                  <span class="attachment-size" *ngIf="pdfBlob">~{{ (pdfBlob.size / 1024) | number:'1.1-1' }} KB</span>
+                </div>
+                <ion-icon name="download" class="download-icon"></ion-icon>
+              </div>
+            </div>
+
+            <!-- Message Editor -->
+            <div class="message-editor">
+              <ion-label>Message:</ion-label>
+              <div class="rich-text-editor">
+                <div class="editor-toolbar">
+                  <ion-button size="small" fill="clear">
+                    <ion-icon name="text" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button size="small" fill="clear">
+                    <ion-icon name="bold" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button size="small" fill="clear">
+                    <ion-icon name="italic" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button size="small" fill="clear">
+                    <ion-icon name="underline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <div class="toolbar-divider"></div>
+                  <ion-button size="small" fill="clear">
+                    <ion-icon name="list" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button size="small" fill="clear">
+                    <ion-icon name="link" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+                <ion-textarea 
+                  formControlName="message" 
+                  rows="12" 
+                  placeholder="Write your message here..."
+                  class="message-textarea">
+                </ion-textarea>
+              </div>
+            </div>
+
+            <!-- Email Preview -->
+            <div class="email-preview-section">
+              <div class="preview-header" (click)="togglePreview()">
+                <ion-icon name="eye"></ion-icon>
+                <span>Preview</span>
+                <ion-icon name="chevron-down" class="toggle-icon"></ion-icon>
+              </div>
+              
+              <div class="preview-content">
+                <div class="email-preview-frame">
+                  <!-- Email Header -->
+                  <div class="preview-header-section">
+                    <div class="preview-row">
+                      <strong>From:</strong>
+                      <span>Your Company &lt;noreply@yourcompany.com&gt;</span>
+                    </div>
+                    <div class="preview-row">
+                      <strong>To:</strong>
+                      <span>{{ emailForm.get('to')?.value || 'recipient@example.com' }}</span>
+                    </div>
+                    <div class="preview-row" *ngIf="emailForm.get('cc')?.value">
+                      <strong>Cc:</strong>
+                      <span>{{ emailForm.get('cc')?.value }}</span>
+                    </div>
+                    <div class="preview-row">
+                      <strong>Subject:</strong>
+                      <span>{{ emailForm.get('subject')?.value }}</span>
+                    </div>
+                    <div class="preview-divider"></div>
+                  </div>
+                  
+                  <!-- Email Body -->
+                  <div class="preview-body">{{ emailForm.get('message')?.value }}</div>
+                  
+                  <!-- Attachment Notice -->
+                  <div class="preview-attachment" *ngIf="emailForm.get('attachPdf')?.value">
+                    <ion-icon name="attach"></ion-icon>
+                    <span>Quote-{{ emailQuote.id }}.pdf</span>
+                  </div>
+                  
+                  <!-- Email Footer -->
+                  <div class="preview-footer">
+                    <p>This email was sent from Quote Management System</p>
+                    <p>&copy; {{ currentYear }} Your Company Name. All rights reserved.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
