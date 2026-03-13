@@ -8,7 +8,7 @@ import {
   IonSelect, IonSelectOption, IonTextarea, IonButtons, IonBackButton, IonGrid,
   IonRow, IonCol, IonBadge, IonSearchbar, ToastController, LoadingController,
   AlertController,
-  IonMenuButton, IonCheckbox, IonChip, IonModal
+  IonMenuButton, IonCheckbox, IonChip, IonModal, IonProgressBar
 } from '@ionic/angular/standalone';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
