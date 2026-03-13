@@ -622,39 +622,75 @@
               
               <div class="preview-content">
                 <div class="email-preview-frame">
-                  <!-- Email Header -->
-                  <div class="preview-header-section">
-                    <div class="preview-row">
-                      <strong>From:</strong>
-                      <span>Chale App &lt;support@chaleapp.com&gt;</span>
-                    </div>
-                    <div class="preview-row">
-                      <strong>To:</strong>
-                      <span>{{ emailForm.get('to')?.value || 'recipient@example.com' }}</span>
-                    </div>
-                    <div class="preview-row" *ngIf="emailForm.get('cc')?.value">
-                      <strong>Cc:</strong>
-                      <span>{{ emailForm.get('cc')?.value }}</span>
-                    </div>
-                    <div class="preview-row">
-                      <strong>Subject:</strong>
-                      <span>{{ emailForm.get('subject')?.value }}</span>
-                    </div>
-                    <div class="preview-divider"></div>
+                  <!-- Email Header - matching backend template -->
+                  <div class="preview-header-section" style="background: linear-gradient(135deg, #073336 0%, orange 100%); color: white; padding: 20px; margin: -20px -20px 20px -20px; border-radius: 10px 10px 0 0;">
+                    <h2 style="margin: 0; text-align: center;">Quote #{{ emailQuote?.id }}</h2>
+                    <p style="margin: 5px 0 0 0; text-align: center;">From: Chale App</p>
                   </div>
                   
-                  <!-- Email Body -->
-                  <div class="preview-body">{{ emailForm.get('message')?.value }}</div>
+                  <!-- Custom Message -->
+                  <div class="preview-body" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #073336;">{{ emailForm.get('message')?.value }}</div>
+                  
+                  <!-- Quote Details - matching backend template -->
+                  <div class="preview-body" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #073336; margin-top: 0;">Quote Details</h3>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Quote Number:</span>
+                      <span>#{{ emailQuote?.id }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Client:</span>
+                      <span>{{ emailQuote?.client?.name || 'N/A' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Email:</span>
+                      <span>{{ emailQuote?.client?.email || 'N/A' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Show Name:</span>
+                      <span>{{ emailQuote?.show_name || 'N/A' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Show Date:</span>
+                      <span>{{ emailQuote?.show_date || 'N/A' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Show Location:</span>
+                      <span>{{ emailQuote?.show_location || 'N/A' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+                      <span style="font-weight: 600; color: #666;">Expiry Date:</span>
+                      <span>{{ emailQuote?.expiry_date || 'N/A' }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                      <span style="font-weight: 600; color: #666;">Total Amount:</span>
+                      <span style="font-size: 20px; font-weight: bold; color: #073336;">{{ emailQuote?.currency?.code || '
+            </div>
+          </form>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
+ }} {{ emailQuote?.total || emailQuote?.amount | number:'1.2-2' }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Notes if present -->
+                  <div class="preview-body" *ngIf="emailQuote?.notes" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #073336; margin-top: 0;">Notes</h3>
+                    <p>{{ emailQuote?.notes }}</p>
+                  </div>
                   
                   <!-- Attachment Notice -->
-                  <div class="preview-attachment" *ngIf="emailForm.get('attachPdf')?.value">
-                    <ion-icon name="attach"></ion-icon>
-                    <span>Quote-{{ emailQuote.id }}.pdf</span>
+                  <div class="preview-attachment" *ngIf="emailForm.get('attachPdf')?.value" style="text-align: center; margin: 20px 0;">
+                    <ion-icon name="attach" style="vertical-align: middle;"></ion-icon>
+                    <span>Please find the quote PDF attached to this email for more details.</span>
                   </div>
                   
                   <!-- Email Footer -->
-                  <div class="preview-footer">
-                    <p>This email was sent from Chale App.</p>
+                  <div class="preview-footer" style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #999; font-size: 12px;">
+                    <p>This email was sent from Quote Management System</p>
                     <p>&copy; {{ currentYear }} Chale App. All rights reserved.</p>
                   </div>
                 </div>
