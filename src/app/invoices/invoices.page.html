@@ -102,6 +102,7 @@
               <ion-icon *ngIf="sortField === 'total'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
             </th>
             <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -139,6 +140,19 @@
                 {{ invoice.status | uppercase }}
               </ion-badge>
             </td>
+            <td>
+              <ion-button (click)="editInvoice(invoice)" color="secondary" size="small">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              <!--Email Button-->
+              <ion-button (click)="sendInvoiceEmail(invoice)" color="secondary" size="small">
+                <ion-icon name="mail-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+              <ion-button (click)="deleteInvoice(invoice)" color="danger" size="small">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </td>
+
           </tr>
           <tr *ngIf="getFilteredInvoices().length === 0">
             <td colspan="6" class="empty-row">
@@ -341,8 +355,12 @@
         </ion-buttons>
         <ion-title>Send Invoice</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="togglePreview()">
+          <!-- <ion-button (click)="togglePreview()">
             <ion-icon [name]="showEmailPreview ? 'eye' : 'eye-off'" slot="icon-only"></ion-icon>
+          </ion-button> -->
+          <ion-button (click)="simulateSendEmail()" [disabled]="!emailForm.valid || isSendingEmail">
+            <ion-icon name="paper-plane" slot="start"></ion-icon>
+            {{ isSendingEmail ? 'Sending...' : 'Send Invoice' }}
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
@@ -427,11 +445,11 @@
         </div>
 
         <!-- Send Button -->
-        <div class="send-button-container">
+        <!-- <div class="send-button-container">
           <ion-button expand="block" type="submit" [disabled]="!emailForm.valid || isSendingEmail">
             <ion-icon name="paper-plane" slot="start"></ion-icon>
             {{ isSendingEmail ? 'Sending...' : 'Send Invoice' }}
-          </ion-button>
+          </ion-button> -->
         </div>
       </form>
     </ion-content>
