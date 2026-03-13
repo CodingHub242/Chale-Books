@@ -478,7 +478,7 @@
           <h2>Quote Sent Successfully!</h2>
           <p>The quote has been sent to <strong>{{ emailForm.get('to')?.value }}</strong></p>
           
-          <div class="success-details">
+          <!-- <div class="success-details">
             <div class="detail-item">
               <ion-icon name="document"></ion-icon>
               <span>Quote #{{ emailQuote.id }}</span>
@@ -492,7 +492,7 @@
               <span>{{ emailQuote.currency?.code || '
  }} {{ emailQuote.total || emailQuote.amount | number:'1.2-2' }}</span>
             </div>
-          </div>
+          </div> -->
 
           <div class="success-actions">
             <ion-button expand="block" (click)="downloadAttachedPdf()">
