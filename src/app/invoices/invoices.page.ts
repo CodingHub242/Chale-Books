@@ -8,13 +8,13 @@ import {
   IonSelect, IonSelectOption, IonTextarea, IonButtons, IonBackButton, IonGrid,
   IonRow, IonCol, IonBadge, IonSearchbar, ToastController, LoadingController,
   AlertController,
-  IonMenuButton, IonCheckbox, IonChip
+  IonMenuButton, IonCheckbox, IonChip, IonModal
 } from '@ionic/angular/standalone';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, mail, document, close, eye, download, checkmark, cash, arrowBack, arrowUp, arrowDown, filter } from 'ionicons/icons';
+import { add, trash, create, mail, document, close, eye, download, checkmark, cash, arrowBack, arrowUp, arrowDown, filter, send, paperPlane } from 'ionicons/icons';
 
 @Component({
   selector: 'app-invoices',
@@ -26,7 +26,7 @@ import { add, trash, create, mail, document, close, eye, download, checkmark, ca
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonFab, IonFabButton, IonIcon, IonSelect, IonSelectOption, IonTextarea,
     IonButtons, IonBackButton, IonMenuButton, IonGrid, IonRow, IonCol, IonBadge,
-    IonSearchbar, IonCheckbox, IonChip
+    IonSearchbar, IonCheckbox, IonChip, IonModal
   ]
 })
 export class InvoicesPage implements OnInit {
@@ -47,6 +47,16 @@ export class InvoicesPage implements OnInit {
   sortField = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  // Email Modal properties
+  showEmailModal = false;
+  emailInvoice: any = null;
+  emailForm!: FormGroup;
+  isSendingEmail = false;
+  emailSendingProgress = 0;
+  emailSent = false;
+  pdfBlob: Blob | null = null;
+  showEmailPreview = true;
+
   constructor(
     private api: Api,
     private auth: Auth,
@@ -56,7 +66,7 @@ export class InvoicesPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add, trash, arrowBack, create, mail, document, close, eye, download, checkmark, cash, arrowUp, arrowDown, filter });
+    addIcons({ add, trash, arrowBack, create, mail, document, close, eye, download, checkmark, cash, arrowUp, arrowDown, filter, send, paperPlane });
     this.initForm();
   }
 
@@ -78,6 +88,15 @@ export class InvoicesPage implements OnInit {
       status: ['draft'],
       notes: [''],
       items: this.fb.array([this.createItem()])
+    });
+
+    // Initialize email form
+    this.emailForm = this.fb.group({
+      to: ['', [Validators.required, Validators.email]],
+      cc: [''],
+      subject: ['', Validators.required],
+      message: ['', Validators.required],
+      attachPdf: [true]
     });
   }
 
@@ -282,18 +301,121 @@ export class InvoicesPage implements OnInit {
   }
 
   async sendInvoice(invoice: any) {
-    const loading = await this.presentLoading('Sending invoice...');
-    this.api.sendInvoice(invoice.id).subscribe({
-      next: async () => {
-        loading.dismiss();
-        await this.presentToast('Invoice sent successfully!', 'success');
-        this.loadInvoices();
+    // Open email modal instead of directly sending
+    this.emailInvoice = invoice;
+    this.emailSent = false;
+    this.isSendingEmail = false;
+    this.emailSendingProgress = 0;
+    this.pdfBlob = null;
+
+    // Pre-fill email form with invoice details
+    const clientEmail = invoice.client?.email || '';
+    const clientName = invoice.client?.name || 'Valued Customer';
+    const amount = parseFloat(invoice.total || invoice.amount || 0);
+    const currencyCode = invoice.currency?.code || '$';
+    
+    this.emailForm.patchValue({
+      to: clientEmail,
+      subject: 'Invoice #' + invoice.invoice_number + ' from Chale App',
+      message: 'Dear ' + clientName + ',\n\n' +
+        'Thank you for your business. Please find attached Invoice #' + invoice.invoice_number + ' for ' + currencyCode + ' ' + amount.toFixed(2) + '.\n\n' +
+        'Please make payment by the due date to avoid any late fees.\n\n' +
+        'If you have any questions regarding this invoice, please contact us.\n\n' +
+        'Thank you for your continued business.\n\n' +
+        'Best regards,\n' +
+        'Chale App'
+    });
+
+    // Load PDF for attachment
+    this.loadPdfForEmail(invoice.id);
+    
+    this.showEmailModal = true;
+  }
+
+  async loadPdfForEmail(invoiceId: number) {
+    this.api.downloadInvoicePdf(invoiceId).subscribe({
+      next: (blob: Blob) => {
+        this.pdfBlob = blob;
       },
       error: async (error: any) => {
-        loading.dismiss();
+        console.error('Error loading PDF for email:', error);
+      }
+    });
+  }
+
+  async simulateSendEmail() {
+    if (!this.emailForm.valid) {
+      await this.presentToast('Please fill all required fields', 'warning');
+      return;
+    }
+
+    this.isSendingEmail = true;
+    this.emailSendingProgress = 0;
+
+    // Get form values
+    const to = this.emailForm.get('to')?.value;
+    const cc = this.emailForm.get('cc')?.value;
+    const subject = this.emailForm.get('subject')?.value;
+    const message = this.emailForm.get('message')?.value;
+
+    // Show progress animation while sending
+    const progressInterval = setInterval(() => {
+      if (this.emailSendingProgress < 90) {
+        this.emailSendingProgress += Math.random() * 10;
+      }
+    }, 200);
+
+    // Call the backend API to send the email
+    this.api.sendInvoice(this.emailInvoice.id, { to, cc, subject, message }).subscribe({
+      next: async () => {
+        clearInterval(progressInterval);
+        this.emailSendingProgress = 100;
+        
+        // Mark as sent
+        this.emailSent = true;
+        this.isSendingEmail = false;
+        
+        // Update invoice status to unpaid
+        if (this.emailInvoice && this.emailInvoice.status === 'draft') {
+          this.emailInvoice.status = 'unpaid';
+          this.loadInvoices();
+        }
+      },
+      error: async (error) => {
+        clearInterval(progressInterval);
+        this.isSendingEmail = false;
         await this.presentToast('Error sending invoice: ' + error.message, 'danger');
       }
     });
+  }
+
+  async downloadAttachedPdf() {
+    if (this.pdfBlob) {
+      const url = window.URL.createObjectURL(this.pdfBlob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = 'invoice-' + (this.emailInvoice?.invoice_number || 'document') + '.pdf';
+      link.click();
+      window.URL.revokeObjectURL(url);
+      await this.presentToast('PDF downloaded!', 'success');
+    } else if (this.emailInvoice) {
+      // Fallback: download from API
+      this.downloadPdf(this.emailInvoice);
+    }
+  }
+
+  closeEmailModal() {
+    this.showEmailModal = false;
+    this.emailInvoice = null;
+    this.emailForm.reset();
+    this.pdfBlob = null;
+    this.emailSent = false;
+    this.isSendingEmail = false;
+    this.emailSendingProgress = 0;
+  }
+
+  togglePreview() {
+    this.showEmailPreview = !this.showEmailPreview;
   }
 
   async previewPdf(invoice: any) {

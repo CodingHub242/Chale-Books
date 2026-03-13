@@ -106,8 +106,8 @@ export class Api {
       .pipe(catchError(this.handleError));
   }
 
-  sendInvoice(id: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/invoices/${id}/send`, {}, { headers: this.getHeaders() })
+  sendInvoice(id: number, data: any = {}): Observable<any> {
+    return this.http.post(`${this.baseUrl}/invoices/${id}/send`, data, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
 

@@ -130,7 +130,7 @@
             </td>
             <td class="clickable" (click)="previewPdf(invoice)">
               <div class="amount-info">
-                <span class="amount" style=" font-weight: 700;font-size: 18px;color: #1565c0;margin-bottom: 2px;display: block;text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);">{{ invoice.total || invoice.amount | number:'1.2-2' }}</span>
+                <span class="amount" style=" font-weight: 700;font-size: 18px;color: #073336;margin-bottom: 2px;display: block;text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);">{{ invoice.total || invoice.amount | number:'1.2-2' }}</span>
                 <span class="currency" style="font-size: 11px;color: #6c757d;font-weight: 500;">{{ invoice.currency?.code }}</span>
               </div>
             </td>
@@ -328,3 +328,112 @@
     </ion-card>
   </div>
 </ion-content>
+
+<!-- Email Modal -->
+<ion-modal [isOpen]="showEmailModal" (didDismiss)="closeEmailModal()" [breakpoints]="[0.1, 0.5, 0.9]" [initialBreakpoint]="0.9">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-button (click)="closeEmailModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Send Invoice</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="togglePreview()">
+            <ion-icon [name]="showEmailPreview ? 'eye' : 'eye-off'" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="email-modal-content">
+      <!-- Success Message -->
+      <div *ngIf="emailSent" class="email-success">
+        <ion-icon name="checkmark-circle" class="success-icon"></ion-icon>
+        <h2>Invoice Sent Successfully!</h2>
+        <p>The invoice has been sent to {{ emailForm.get('to')?.value }}</p>
+        <ion-button expand="block" (click)="closeEmailModal()">Done</ion-button>
+      </div>
+
+      <!-- Email Form -->
+      <form *ngIf="!emailSent" [formGroup]="emailForm" (ngSubmit)="simulateSendEmail()">
+        <div class="email-form-container">
+          <!-- Form Fields -->
+          <div class="form-fields">
+            <ion-item>
+              <ion-label position="floating">To *</ion-label>
+              <ion-input type="email" formControlName="to"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="floating">CC</ion-label>
+              <ion-input type="email" formControlName="cc"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="floating">Subject *</ion-label>
+              <ion-input type="text" formControlName="subject"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="floating">Message *</ion-label>
+              <ion-textarea formControlName="message" rows="8"></ion-textarea>
+            </ion-item>
+
+            <div class="attachment-info" *ngIf="pdfBlob">
+              <ion-icon name="document-attached"></ion-icon>
+              <span>Invoice PDF will be attached</span>
+              <ion-button size="small" fill="outline" (click)="downloadAttachedPdf()">
+                <ion-icon name="download" slot="start"></ion-icon>
+                Preview
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Preview Section -->
+          <div class="preview-section" *ngIf="showEmailPreview">
+            <div class="preview-header">
+              <h3>Email Preview</h3>
+            </div>
+            <div class="preview-content">
+              <div class="email-preview-frame">
+                <div class="preview-header-bar">
+                  <span><strong>To:</strong> {{ emailForm.get('to')?.value }}</span>
+                  <span><strong>Subject:</strong> {{ emailForm.get('subject')?.value }}</span>
+                </div>
+                <div class="preview-body">
+                  <div class="email-header-preview">
+                    <h1>Invoice #{{ emailInvoice?.invoice_number }}</h1>
+                    <p>From: Chale App</p>
+                  </div>
+                  <div class="email-message-preview">
+                    <pre>{{ emailForm.get('message')?.value }}</pre>
+                  </div>
+                  <div class="email-footer-preview">
+                    <p>Please find the invoice PDF attached to this email for more details.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div *ngIf="isSendingEmail" class="sending-progress">
+          <ion-progress-bar type="indeterminate" [value]="emailSendingProgress / 100"></ion-progress-bar>
+          <p>Sending invoice...</p>
+        </div>
+
+        <!-- Send Button -->
+        <div class="send-button-container">
+          <ion-button expand="block" type="submit" [disabled]="!emailForm.valid || isSendingEmail">
+            <ion-icon name="paper-plane" slot="start"></ion-icon>
+            {{ isSendingEmail ? 'Sending...' : 'Send Invoice' }}
+          </ion-button>
+        </div>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
