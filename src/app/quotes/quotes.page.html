@@ -525,7 +525,7 @@
         <!-- Email Composition Form -->
         <div class="email-compose-form" *ngIf="!emailSent && !isSendingEmail">
           <!-- Quote Info Card -->
-          <ion-card class="quote-info-card">
+          <!-- <ion-card class="quote-info-card">
             <ion-card-content>
               <div class="quote-header-info">
                 <div class="quote-avatar">
@@ -543,7 +543,7 @@
                 </div>
               </div>
             </ion-card-content>
-          </ion-card>
+          </ion-card> -->
 
           <!-- Email Fields -->
           <form [formGroup]="emailForm" (ngSubmit)="simulateSendEmail()">
@@ -626,7 +626,7 @@
                   <div class="preview-header-section">
                     <div class="preview-row">
                       <strong>From:</strong>
-                      <span>Your Company &lt;noreply@yourcompany.com&gt;</span>
+                      <span>Chale App &lt;support@chaleapp.com&gt;</span>
                     </div>
                     <div class="preview-row">
                       <strong>To:</strong>
@@ -654,8 +654,8 @@
                   
                   <!-- Email Footer -->
                   <div class="preview-footer">
-                    <p>This email was sent from Quote Management System</p>
-                    <p>&copy; {{ currentYear }} Your Company Name. All rights reserved.</p>
+                    <p>This email was sent from Chale App.</p>
+                    <p>&copy; {{ currentYear }} Chale App. All rights reserved.</p>
                   </div>
                 </div>
               </div>

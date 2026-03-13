@@ -402,7 +402,7 @@ export class QuotesPage implements OnInit {
     
     this.emailForm.patchValue({
       to: clientEmail,
-      subject: 'Quote #' + quote.id + ' from Your Company',
+      subject: 'Quote #' + quote.id + ' from Chale App',
       message: 'Dear ' + clientName + ',\n\n' +
         'Thank you for your interest in our services. Please find attached the quote #' + quote.id + ' for your review.\n\n' +
         'Quote Details:\n' +
@@ -412,7 +412,7 @@ export class QuotesPage implements OnInit {
         'Please do not hesitate to contact us if you have any questions or need further clarification.\n\n' +
         'We look forward to hearing from you.\n\n' +
         'Best regards,\n' +
-        'Your Company Name'
+        'Chale App'
     });
 
     // Load PDF for attachment
