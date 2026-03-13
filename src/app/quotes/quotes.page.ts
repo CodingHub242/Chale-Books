@@ -441,12 +441,24 @@ export class QuotesPage implements OnInit {
     this.isSendingEmail = true;
     this.emailSendingProgress = 0;
 
-    // Simulate email sending with progress
+    // Get form values
+    const to = this.emailForm.get('to')?.value;
+    const cc = this.emailForm.get('cc')?.value;
+    const subject = this.emailForm.get('subject')?.value;
+    const message = this.emailForm.get('message')?.value;
+
+    // Show progress animation while sending
     const progressInterval = setInterval(() => {
-      this.emailSendingProgress += Math.random() * 15;
-      if (this.emailSendingProgress >= 100) {
-        this.emailSendingProgress = 100;
+      if (this.emailSendingProgress < 90) {
+        this.emailSendingProgress += Math.random() * 10;
+      }
+    }, 200);
+
+    // Call the backend API to send the email
+    this.api.sendQuote(this.emailQuote.id, { to, cc, subject, message }).subscribe({
+      next: async () => {
         clearInterval(progressInterval);
+        this.emailSendingProgress = 100;
         
         // Mark as sent
         this.emailSent = true;
@@ -457,8 +469,13 @@ export class QuotesPage implements OnInit {
           this.emailQuote.status = 'sent';
           this.loadQuotes();
         }
+      },
+      error: async (error) => {
+        clearInterval(progressInterval);
+        this.isSendingEmail = false;
+        await this.presentToast('Error sending quote: ' + error.message, 'danger');
       }
-    }, 300);
+    });
   }
 
   async downloadAttachedPdf() {

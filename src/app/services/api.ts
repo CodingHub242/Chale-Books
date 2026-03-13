@@ -197,8 +197,8 @@ export class Api {
       .pipe(catchError(this.handleError));
   }
 
-  sendQuote(id: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/quotes/${id}/send`, {}, { headers: this.getHeaders() })
+  sendQuote(id: number, data: any = {}): Observable<any> {
+    return this.http.post(`${this.baseUrl}/quotes/${id}/send`, data, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
 
