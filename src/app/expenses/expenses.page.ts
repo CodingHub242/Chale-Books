@@ -14,7 +14,9 @@ import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, close, arrowBack, closeCircle, filter } from 'ionicons/icons';
+import { add, trash, create, close, arrowBack, closeCircle, filter, cloudUploadOutline } from 'ionicons/icons';
+import { ModalController } from '@ionic/angular';
+import { ImportExpensesModalComponent } from './components/import-expenses-modal.component';
 
 @Component({
   selector: 'app-expenses',
@@ -76,9 +78,10 @@ export class ExpensesPage implements OnInit {
     private fb: FormBuilder,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private modalController: ModalController
   ) {
-    addIcons({ add,arrowBack, trash, create, close, closeCircle,filter });
+    addIcons({ add, arrowBack, trash, create, close, closeCircle, filter, 'cloud-upload': cloudUploadOutline });
     this.initForm();
   }
 
@@ -750,5 +753,29 @@ export class ExpensesPage implements OnInit {
 
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+
+  // Open import modal
+  async openImportModal() {
+    const modal = await this.modalController.create({
+      component: ImportExpensesModalComponent,
+      cssClass: 'import-expenses-modal',
+      componentProps: {
+        paidThroughOptions: this.paidThroughOptions
+      }
+    });
+
+    modal.onDidDismiss().then((result) => {
+      if (result.data && !result.data.cancelled) {
+        const { success, failed, total } = result.data;
+        this.presentToast(
+          `Import complete: ${success} expenses imported${failed > 0 ? ', ' + failed + ' failed' : ''}`,
+          failed > 0 ? 'warning' : 'success'
+        );
+        this.loadExpenses();
+      }
+    });
+
+    await modal.present();
   }
 }

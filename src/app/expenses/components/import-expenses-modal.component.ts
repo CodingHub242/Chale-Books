@@ -1,0 +1,279 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { 
+  IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
+  IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
+} from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { 
+  closeOutline, cloudUploadOutline, arrowForwardOutline, arrowBackOutline, 
+  downloadOutline, checkmarkCircleOutline, warningOutline, alertCircleOutline, 
+  informationCircleOutline
+} from 'ionicons/icons';
+import { ExpenseImportService, ParsedRow, ImportResult } from '../../services/expense-import.service';
+import { Api } from '../../services/api';
+
+@Component({
+  selector: 'app-import-expenses-modal',
+  templateUrl: './import-expenses-modal.component.html',
+  styleUrls: ['./import-expenses-modal.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
+    IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
+  ]
+})
+export class ImportExpensesModalComponent implements OnInit {
+  currentStep = 1;
+  selectedFile: File | null = null;
+  fileHeaders: string[] = [];
+  parsedRows: ParsedRow[] = [];
+  columnMapping: { [key: string]: string } = {};
+  previewData: ParsedRow[] = [];
+  
+  validData: ParsedRow[] = [];
+  validationErrors: string[] = [];
+  isImporting = false;
+  importProgress = 0;
+  importResult: { success: number; failed: number } | null = null;
+  
+  isDragOver = false;
+  
+  availableFields = [
+    { field: 'Date', column: 'expense_date', required: true },
+    { field: 'Amount', column: 'amount', required: true },
+    { field: 'Category', column: 'category', required: false },
+    { field: 'Description', column: 'description', required: false },
+    { field: 'Paid Through', column: 'paid_through', required: true },
+    { field: 'Currency', column: 'currency_id', required: false },
+  ];
+
+  // Paid through options from parent
+  paidThroughOptions = [
+    { value: 'MOMO', label: 'MOMO' },
+    { value: 'Chale Ecobank Account', label: 'Chale Ecobank Account' },
+    { value: 'Cash', label: 'Cash' }
+  ];
+
+  constructor(
+    private modalController: ModalController,
+    private importService: ExpenseImportService,
+    private api: Api
+  ) {
+    addIcons({ 
+      closeOutline, 
+      cloudUploadOutline, 
+      arrowForwardOutline, 
+      arrowBackOutline,
+      downloadOutline, 
+      checkmarkCircleOutline, 
+      warningOutline, 
+      alertCircleOutline,
+      informationCircleOutline
+    });
+  }
+
+  ngOnInit() {}
+
+  // Step 1: File Selection
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+    }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+    
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.selectedFile = files[0];
+    }
+  }
+
+  downloadTemplate() {
+    this.importService.downloadTemplate();
+  }
+
+  async parseFile() {
+    if (!this.selectedFile) return;
+
+    try {
+      const result = await this.importService.parseFile(this.selectedFile);
+      this.fileHeaders = result.headers;
+      this.parsedRows = result.rows;
+      this.previewData = result.rows;
+
+      // Auto-map columns
+      this.columnMapping = this.importService.autoMapColumns(this.fileHeaders);
+      
+      this.currentStep = 2;
+    } catch (error: any) {
+      console.error('Error parsing file:', error);
+      this.showError(error.message || 'Failed to parse file');
+    }
+  }
+
+  // Step 2: Column Mapping
+  getColumnMapping(fieldColumn: string): string {
+    return Object.keys(this.columnMapping).find(
+      key => this.columnMapping[key] === fieldColumn
+    ) || '';
+  }
+
+  onColumnChange(fieldColumn: string, event: any) {
+    const selectedColumn = event.detail.value;
+    
+    // Remove old mapping for this field
+    const oldMapping = Object.keys(this.columnMapping).find(
+      key => this.columnMapping[key] === fieldColumn
+    );
+    if (oldMapping) {
+      delete this.columnMapping[oldMapping];
+    }
+    
+    // Add new mapping
+    if (selectedColumn) {
+      this.columnMapping[selectedColumn] = fieldColumn;
+    }
+  }
+
+  getPreviewValue(row: ParsedRow, fieldColumn: string): string {
+    const mappedColumn = this.getColumnMapping(fieldColumn);
+    if (!mappedColumn) return '-';
+    
+    const value = row[mappedColumn];
+    return value !== undefined && value !== null ? String(value) : '-';
+  }
+
+  isMappingValid(): boolean {
+    // Check required fields are mapped
+    const requiredFields = this.availableFields.filter(f => f.required);
+    const mappedRequired = requiredFields.filter(f => 
+      Object.values(this.columnMapping).includes(f.column)
+    );
+    
+    return mappedRequired.length === requiredFields.length;
+  }
+
+  validateData() {
+    const result: ImportResult = this.importService.transformData(
+      this.parsedRows, 
+      this.columnMapping
+    );
+    
+    this.validData = result.data;
+    this.validationErrors = result.errors;
+    
+    this.currentStep = 3;
+  }
+
+  previousStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+    }
+  }
+
+  // Step 3: Import
+  async importExpenses() {
+    if (this.validData.length === 0) return;
+    
+    this.isImporting = true;
+    this.importProgress = 0;
+    
+    let successCount = 0;
+    let failedCount = 0;
+    
+    // Import each expense
+    for (let i = 0; i < this.validData.length; i++) {
+      const expense = this.validData[i];
+      
+      try {
+        await this.importSingleExpense(expense);
+        successCount++;
+      } catch (error) {
+        failedCount++;
+        console.error('Failed to import expense:', expense, error);
+      }
+      
+      this.importProgress = i + 1;
+    }
+    
+    this.isImporting = false;
+    this.importResult = { success: successCount, failed: failedCount };
+    
+    // Dismiss with result after showing completion
+    setTimeout(() => {
+      this.modalController.dismiss({
+        success: successCount,
+        failed: failedCount,
+        total: this.validData.length
+      });
+    }, 1500);
+  }
+
+  private importSingleExpense(expense: ParsedRow): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Find or create category
+      const categoryName = expense['category'] || 'Uncategorized';
+      
+      // Determine currency - default to GHS
+      const currencyId = this.resolveCurrency(expense['currency_id']);
+      
+      // Determine paid through - default to Cash
+      const paidThrough = expense['paid_through'] || 'Cash';
+      
+      const expenseData = {
+        category: categoryName,
+        amount: expense['amount'],
+        currency_id: currencyId,
+        expense_date: expense['expense_date'],
+        description: expense['description'] || '',
+        paid_through: paidThrough,
+        custom_fields: expense['notes'] ? { notes: expense['notes'] } : null
+      };
+      
+      this.api.createExpense(expenseData).subscribe({
+        next: () => resolve(),
+        error: (err) => reject(err)
+      });
+    });
+  }
+
+  private resolveCurrency(currencyCode: any): number {
+    // Default to GHS (currency ID 1) if not specified
+    if (!currencyCode) return 1;
+    
+    // Could implement currency lookup here
+    // For now, return default
+    return 1;
+  }
+
+  showError(message: string) {
+    console.error(message);
+    // Could emit an event or use toast
+  }
+
+  close() {
+    this.modalController.dismiss({ cancelled: true });
+  }
+}
