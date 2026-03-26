@@ -5,7 +5,6 @@ import {
   IonContent, IonTitle, IonToolbar, IonButton, IonButtons,
   IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
 } from '@ionic/angular/standalone';
-import { ModalController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { 
   closeOutline, cloudUploadOutline, arrowForwardOutline, arrowBackOutline, 
@@ -60,7 +59,6 @@ export class ImportExpensesModalComponent implements OnInit {
   ];
 
   constructor(
-    private modalController: ModalController,
     private importService: ExpenseImportService,
     private api: Api
   ) {
@@ -221,14 +219,19 @@ export class ImportExpensesModalComponent implements OnInit {
     this.isImporting = false;
     this.importResult = { success: successCount, failed: failedCount };
     
-    // Dismiss with result after showing completion
-    setTimeout(() => {
-      this.modalController.dismiss({
-        success: successCount,
-        failed: failedCount,
-        total: this.validData.length
-      });
-    }, 1500);
+    // Set result - the parent will handle closing
+    // Use a custom event to signal completion
+    this.dispatchImportComplete(successCount, failedCount);
+  }
+
+  private dispatchImportComplete(success: number, failed: number) {
+    // Create and dispatch a custom event that the parent can listen to
+    const event = new CustomEvent('importComplete', {
+      detail: { success, failed, total: this.validData.length },
+      bubbles: true,
+      composed: true
+    });
+    document.dispatchEvent(event);
   }
 
   private importSingleExpense(expense: ParsedRow): Promise<void> {
@@ -270,10 +273,9 @@ export class ImportExpensesModalComponent implements OnInit {
 
   showError(message: string) {
     console.error(message);
-    // Could emit an event or use toast
   }
 
   close() {
-    this.modalController.dismiss({ cancelled: true });
+    // The parent handles closing via isOpen property
   }
 }

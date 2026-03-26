@@ -15,7 +15,6 @@ import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { add, trash, create, close, arrowBack, closeCircle, filter, cloudUploadOutline } from 'ionicons/icons';
-import { ModalController } from '@ionic/angular';
 import { ImportExpensesModalComponent } from './components/import-expenses-modal.component';
 
 @Component({
@@ -29,7 +28,8 @@ import { ImportExpensesModalComponent } from './components/import-expenses-modal
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonFab, IonFabButton, IonIcon, IonSelect, IonSelectOption, IonTextarea,
     IonButtons, IonBackButton,IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonSearchbar, IonChip,
-    IonModal
+    IonModal,
+    ImportExpensesModalComponent
   ]
 })
 export class ExpensesPage implements OnInit {
@@ -72,6 +72,8 @@ export class ExpensesPage implements OnInit {
     { value: 'Cash', label: 'Cash' }
   ];
 
+  isImportModalOpen = false;
+
   constructor(
     private api: Api,
     private auth: Auth,
@@ -79,8 +81,7 @@ export class ExpensesPage implements OnInit {
     private fb: FormBuilder,
     private toastController: ToastController,
     private loadingController: LoadingController,
-    private alertController: AlertController,
-    private modalController: ModalController
+    private alertController: AlertController
   ) {
     addIcons({ add, arrowBack, trash, create, close, closeCircle, filter, 'cloud-upload': cloudUploadOutline });
     this.initForm();
@@ -757,26 +758,27 @@ export class ExpensesPage implements OnInit {
   }
 
   // Open import modal
-  async openImportModal() {
-    const modal = await this.modalController.create({
-      component: ImportExpensesModalComponent,
-      cssClass: 'import-expenses-modal',
-      componentProps: {
-        paidThroughOptions: this.paidThroughOptions
-      }
-    });
+  openImportModal() {
+    this.isImportModalOpen = true;
+    
+    // Listen for import complete event
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { success, failed } = customEvent.detail;
+      this.isImportModalOpen = false;
+      this.presentToast(
+        `Import complete: ${success} expenses imported${failed > 0 ? ', ' + failed + ' failed' : ''}`,
+        failed > 0 ? 'warning' : 'success'
+      );
+      this.loadExpenses();
+      // Remove the listener
+      document.removeEventListener('importComplete', handler);
+    };
+    
+    document.addEventListener('importComplete', handler);
+  }
 
-    modal.onDidDismiss().then((result) => {
-      if (result.data && !result.data.cancelled) {
-        const { success, failed, total } = result.data;
-        this.presentToast(
-          `Import complete: ${success} expenses imported${failed > 0 ? ', ' + failed + ' failed' : ''}`,
-          failed > 0 ? 'warning' : 'success'
-        );
-        this.loadExpenses();
-      }
-    });
-
-    await modal.present();
+  onImportModalDismiss(event: any) {
+    this.isImportModalOpen = false;
   }
 }
