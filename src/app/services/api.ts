@@ -136,6 +136,12 @@ export class Api {
       .pipe(catchError(this.handleError));
   }
 
+  // Bulk import expenses
+  importExpenses(expenses: any[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/expenses/import`, { expenses }, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
   updateExpense(id: number, data: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/expenses/${id}`, data, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));

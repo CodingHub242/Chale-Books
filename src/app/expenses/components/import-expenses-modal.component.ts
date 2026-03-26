@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
-  IonContent, IonTitle, IonToolbar, IonButton, IonButtons,
-  IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
+  IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
+  IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner, IonModal
 } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { 
   closeOutline, cloudUploadOutline, arrowForwardOutline, arrowBackOutline, 
@@ -22,7 +23,7 @@ import { Api } from '../../services/api';
   imports: [
     CommonModule,
     FormsModule,
-    IonContent, IonTitle, IonToolbar, IonButton, IonButtons,
+    IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
     IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
   ]
 })
@@ -60,7 +61,8 @@ export class ImportExpensesModalComponent implements OnInit {
 
   constructor(
     private importService: ExpenseImportService,
-    private api: Api
+    private api: Api,
+    private modalController: ModalController
   ) {
     addIcons({ 
       closeOutline, 
@@ -198,30 +200,26 @@ export class ImportExpensesModalComponent implements OnInit {
     this.isImporting = true;
     this.importProgress = 0;
     
-    let successCount = 0;
-    let failedCount = 0;
-    
-    // Import each expense
-    for (let i = 0; i < this.validData.length; i++) {
-      const expense = this.validData[i];
-      
-      try {
-        await this.importSingleExpense(expense);
-        successCount++;
-      } catch (error) {
-        failedCount++;
-        console.error('Failed to import expense:', expense, error);
+    // Use bulk import API for better performance
+    this.api.importExpenses(this.validData).subscribe({
+      next: (result: any) => {
+        this.isImporting = false;
+        this.importResult = { 
+          success: result.success_count || this.validData.length, 
+          failed: result.failed_count || 0 
+        };
+        this.dispatchImportComplete(this.importResult.success, this.importResult.failed);
+      },
+      error: (error: any) => {
+        this.isImporting = false;
+        console.error('Import failed:', error);
+        this.importResult = { 
+          success: 0, 
+          failed: this.validData.length 
+        };
+        this.dispatchImportComplete(0, this.validData.length);
       }
-      
-      this.importProgress = i + 1;
-    }
-    
-    this.isImporting = false;
-    this.importResult = { success: successCount, failed: failedCount };
-    
-    // Set result - the parent will handle closing
-    // Use a custom event to signal completion
-    this.dispatchImportComplete(successCount, failedCount);
+    });
   }
 
   private dispatchImportComplete(success: number, failed: number) {
@@ -276,6 +274,6 @@ export class ImportExpensesModalComponent implements OnInit {
   }
 
   close() {
-    // The parent handles closing via isOpen property
+    this.modalController.dismiss();
   }
 }
