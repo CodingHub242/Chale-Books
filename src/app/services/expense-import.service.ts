@@ -43,14 +43,21 @@ export class ExpenseImportService {
   readonly defaultMappings: { [key: string]: string } = {
     'date': 'expense_date',
     'expense_date': 'expense_date',
+    'expense date': 'expense_date',
+    'transaction date': 'expense_date',
+    'transaction_date': 'expense_date',
     'amount': 'amount',
-    ' Amount': 'amount',
+    ' amount': 'amount',
+    'amount (ghs)': 'amount',
     'category': 'category',
+    'expense category': 'category',
     'description': 'description',
     'desc': 'description',
     'notes': 'notes',
     'paid_through': 'paid_through',
     'paid through': 'paid_through',
+    'payment method': 'paid_through',
+    'payment_method': 'paid_through',
     'account': 'paid_through',
     'currency': 'currency_id',
     // Custom field mappings
@@ -70,9 +77,17 @@ export class ExpenseImportService {
       const extension = file.name.split('.').pop()?.toLowerCase();
 
       if (extension === 'csv') {
-        this.parseCSV(file).then(result => resolve(result)).catch(err => reject(err));
+        this.parseCSV(file).then(result => {
+          console.log('CSV Parsed - Headers:', result.headers);
+          console.log('CSV Parsed - First row:', result.rows[0]);
+          resolve(result);
+        }).catch(err => reject(err));
       } else if (extension === 'xlsx' || extension === 'xls') {
-        this.parseExcel(file).then(result => resolve(result)).catch(err => reject(err));
+        this.parseExcel(file).then(result => {
+          console.log('Excel Parsed - Headers:', result.headers);
+          console.log('Excel Parsed - First row:', result.rows[0]);
+          resolve(result);
+        }).catch(err => reject(err));
       } else {
         reject(new Error('Unsupported file format. Please use CSV or Excel files.'));
       }
@@ -153,6 +168,7 @@ export class ExpenseImportService {
       }
     });
     
+    console.log('Auto-mapping columns:', mapping);
     return mapping;
   }
 
@@ -180,9 +196,11 @@ export class ExpenseImportService {
 
         if (sourceColumn) {
           let value = row[sourceColumn];
+          console.log(`Field: ${field.column}, Source column: ${sourceColumn}, Raw value:`, value);
           
           // Apply field-specific transformations
           transformedRow[field.column] = this.transformField(field.column, value);
+          console.log(`Transformed value:`, transformedRow[field.column]);
           
           // Validate required fields
           if (field.required && (value === null || value === undefined || value === '')) {
@@ -258,19 +276,73 @@ export class ExpenseImportService {
   private parseDate(value: any): string | null {
     if (!value) return null;
 
-    // If already a valid date string
-    if (typeof value === 'string') {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split('T')[0];
-      }
-    }
-
-    // If it's a serial number (Excel date)
+    // If it's a number (Excel serial date)
     if (typeof value === 'number') {
       // Excel serial date (days since 1899-12-30)
       const date = new Date((value - 25569) * 86400 * 1000);
       return date.toISOString().split('T')[0];
+    }
+
+    // If it's a string, try various formats
+    if (typeof value === 'string') {
+      const dateStr = value.trim();
+      
+      // Try standard Date parsing first
+      let date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+
+      // Try to parse human-readable formats like "Tuesday 1st January 2026"
+      // Remove ordinal suffixes (st, nd, rd, th)
+      const cleanedDate = dateStr
+        .replace(/(\d+)(st|nd|rd|th)/gi, '$1')  // Remove st, nd, rd, th
+        .replace(/\s+/g, ' ')  // Normalize whitespace
+        .trim();
+
+      // Try parsing the cleaned date
+      date = new Date(cleanedDate);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+
+      // Try common date formats manually
+      // Format: "1 January 2026" or "January 1, 2026"
+      const months: { [key: string]: number } = {
+        'january': 0, 'february': 1, 'march': 2, 'april': 3,
+        'may': 4, 'june': 5, 'july': 6, 'august': 7,
+        'september': 8, 'october': 9, 'november': 10, 'december': 11
+      };
+
+      // Match "1 January 2026" or "1st January 2026"
+      const dayMonthYearMatch = cleanedDate.match(/(\d+)\s+(\w+)\s+(\d{4})/i);
+      if (dayMonthYearMatch) {
+        const day = parseInt(dayMonthYearMatch[1], 10);
+        const monthName = dayMonthYearMatch[2].toLowerCase();
+        const year = parseInt(dayMonthYearMatch[3], 10);
+        const month = months[monthName];
+        if (month !== undefined) {
+          date = new Date(year, month, day);
+          if (!isNaN(date.getTime())) {
+            return date.toISOString().split('T')[0];
+          }
+        }
+      }
+
+      // Match "January 1, 2026" or "Jan 1 2026"
+      const monthDayYearMatch = cleanedDate.match(/(\w+)\s+(\d+),?\s+(\d{4})/i);
+      if (monthDayYearMatch) {
+        const monthName = monthDayYearMatch[1].toLowerCase();
+        const day = parseInt(monthDayYearMatch[2], 10);
+        const year = parseInt(monthDayYearMatch[3], 10);
+        const month = months[monthName.substring(0, 3)]; // Handle Jan, Feb, etc.
+        if (month !== undefined) {
+          date = new Date(year, month, day);
+          if (!isNaN(date.getTime())) {
+            return date.toISOString().split('T')[0];
+          }
+        }
+      }
     }
 
     return null;

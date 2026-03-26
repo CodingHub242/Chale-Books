@@ -43,7 +43,7 @@ export class ImportExpensesModalComponent implements OnInit {
   isDragOver = false;
   
   availableFields = [
-    { field: 'Date', column: 'expense_date', required: true },
+    { field: 'Date', column: 'expense_date', required: false },
     { field: 'Amount', column: 'amount', required: true },
     { field: 'Category', column: 'category', required: false },
     { field: 'Description', column: 'description', required: false },
@@ -159,6 +159,9 @@ export class ImportExpensesModalComponent implements OnInit {
 
       // Auto-map columns
       this.columnMapping = this.importService.autoMapColumns(this.fileHeaders);
+      console.log('File headers:', this.fileHeaders);
+      console.log('Column mapping:', this.columnMapping);
+      console.log('First parsed row:', this.parsedRows[0]);
       
       this.currentStep = 2;
     } catch (error: any) {
@@ -212,11 +215,18 @@ export class ImportExpensesModalComponent implements OnInit {
   validateData() {
     // Pass the column mapping - custom field mappings are included
     // because they're added when user selects a column for a custom field
+    console.log('Validating with column mapping:', this.columnMapping);
+    console.log('First row before transform:', this.parsedRows[0]);
+    
     const result: ImportResult = this.importService.transformData(
       this.parsedRows, 
       this.columnMapping,
       this.customMappingFields
     );
+    
+    console.log('Validation result - valid data count:', result.data.length);
+    console.log('Validation result - first valid row:', result.data[0]);
+    console.log('Validation errors:', result.errors);
     
     this.validData = result.data;
     this.validationErrors = result.errors;
