@@ -323,11 +323,11 @@ export class ImportExpensesModalComponent implements OnInit {
 
   private resolveCurrency(currencyCode: any): number {
     // Default to GHS (currency ID 1) if not specified
-    if (!currencyCode) return 1;
+    if (!currencyCode) return 39;
     
     // Could implement currency lookup here
     // For now, return default
-    return 1;
+    return 39;
   }
 
   getRequiredFieldsCount(): number {
