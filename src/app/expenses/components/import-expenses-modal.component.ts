@@ -256,7 +256,7 @@ export class ImportExpensesModalComponent implements OnInit {
         category: row['category'] || 'Uncategorized',
         description: row['description'] || '',
         paid_through: row['paid_through'],
-        currency_id: row['currency_id'] || 1,
+        currency_id: row['currency_id'] || 39,
         custom_fields: Object.keys(customFieldsData).length > 0 ? customFieldsData : null
       };
     });
