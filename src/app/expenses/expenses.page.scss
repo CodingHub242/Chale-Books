@@ -1,3 +1,234 @@
+// ============================================
+// EXPENSES PAGE STYLING
+// ============================================
+
+// Main Container
+.expenses-container {
+  padding: 16px;
+}
+
+// Table wrapper for scroll behavior
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
+  position: relative;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+}
+
+// Expenses Table
+.expenses-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+
+  // Table Header
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    th {
+      padding: 16px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      border-bottom: none;
+      
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ion-icon {
+          font-size: 14px;
+          margin-left: 4px;
+        }
+      }
+
+      &.checkbox-column {
+        width: 40px;
+        text-align: center;
+      }
+    }
+  }
+
+  // Table Body
+  tbody {
+    tr {
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:hover {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.04) 0%, rgba(118, 75, 162, 0.04) 100%);
+      }
+
+      &.selected {
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      }
+    }
+
+    td {
+      padding: 14px 12px;
+      vertical-align: middle;
+      font-size: 14px;
+      color: #495057;
+
+      &.checkbox-column {
+        text-align: center;
+      }
+
+      &.clickable {
+        cursor: pointer;
+      }
+    }
+  }
+
+  // Column Specific Styles
+  .category-column {
+    min-width: 120px;
+    
+    .category-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .category-name {
+        font-weight: 500;
+        color: #495057;
+      }
+    }
+  }
+
+  .description-column {
+    min-width: 200px;
+    max-width: 300px;
+    
+    .description-cell {
+      .description-text {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 280px;
+      }
+      
+      .custom-fields-preview {
+        margin-top: 4px;
+        
+        small {
+          color: #868e96;
+          font-size: 11px;
+        }
+      }
+    }
+  }
+
+  .date-column {
+    min-width: 100px;
+    
+    .date-info {
+      .formatted-date {
+        color: #495057;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .amount-column {
+    min-width: 100px;
+    
+    .amount-info {
+      display: flex;
+      flex-direction: column;
+      
+      .amount {
+        font-weight: 600;
+        font-size: 15px;
+        color: #28a745;
+      }
+      
+      .currency {
+        font-size: 12px;
+        color: #868e96;
+      }
+    }
+  }
+
+  .paid-through-column {
+    min-width: 120px;
+    
+    .paid-through {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #e9ecef;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #495057;
+    }
+  }
+
+  .actions-column {
+    min-width: 100px;
+    text-align: right;
+    
+    .action-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+      
+      ion-button {
+        --padding-start: 8px;
+        --padding-end: 8px;
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-row {
+  text-align: center;
+  padding: 60px 20px;
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    
+    .empty-icon {
+      font-size: 64px;
+      color: #dee2e6;
+    }
+    
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #495057;
+      margin: 0;
+    }
+    
+    p {
+      color: #868e96;
+      font-size: 14px;
+      margin: 0 0 8px 0;
+    }
+  }
+}
+
 // Pagination Container
 .pagination-container {
   margin-top: 20px;
@@ -31,15 +262,189 @@
   }
 }
 
-// Table wrapper for scroll behavior
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: calc(100vh - 280px);
-  position: relative;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
+// Form Container
+.form-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  ion-card {
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e9ecef;
+
+    ion-card-content {
+      padding: 24px;
+
+      h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #495057;
+        margin: 0 0 24px 0;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      ion-item {
+        margin-bottom: 16px;
+        --border-radius: 10px;
+        --background: #f8f9fa;
+        --padding-start: 16px;
+        --padding-end: 16px;
+        
+        &:hover {
+          --background: #f1f3f5;
+        }
+
+        ion-label {
+          font-weight: 500;
+          color: #495057;
+        }
+      }
+
+      ion-select {
+        --padding-start: 16px;
+      }
+
+      ion-input {
+        --padding-start: 16px;
+      }
+
+      ion-textarea {
+        --padding-start: 16px;
+      }
+    }
+  }
+}
+
+// Custom Fields Section
+.custom-fields-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e9ecef;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 8px 0;
+  }
+
+  .custom-fields-hint {
+    font-size: 13px;
+    color: #868e96;
+    margin: 0 0 16px 0;
+  }
+
+  .custom-field-row {
+    margin-bottom: 12px;
+
+    ion-card {
+      --ion-card-background: #f8f9fa;
+      border-radius: 12px;
+      margin: 0;
+      box-shadow: none;
+      border: 1px solid #e9ecef;
+    }
+  }
+}
+
+// Form Actions
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+
+  ion-button {
+    --border-radius: 10px;
+    height: 48px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+}
+
+// Filters Toolbar
+.filters-toolbar {
+  --background: white;
+  --min-height: 56px;
+  border-bottom: 1px solid #e9ecef;
+
+  .filters-grid {
+    padding: 8px 0;
+  }
+
+  .search-bar {
+    --background: #f8f9fa;
+    --border-radius: 10px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    height: 40px;
+  }
+
+  .filter-select {
+    --background: #f8f9fa;
+    --border-radius: 10px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .date-filter {
+    --background: #f8f9fa;
+    --border-radius: 10px;
+    height: 40px;
+    font-size: 14px;
+    --padding-start: 12px;
+  }
+}
+
+// Category Chips
+ion-chip.category-chip {
+  --background: #f8f9fa;
+  --color: #495057;
+  font-weight: 500;
+  margin: 4px 8px 4px 0;
+}
+
+// Import Modal Styles
+.import-expenses-modal {
+  --height: 90%;
+  --border-radius: 16px 16px 0 0;
+}
+
+// Bulk Actions Toolbar
+ion-toolbar[color="warning"] {
+  --background: #ffc107;
+  --color: #000;
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .expenses-container {
+    padding: 12px;
+  }
+
+  .expenses-table {
+    font-size: 13px;
+
+    thead th, tbody td {
+      padding: 10px 8px;
+    }
+  }
+
+  .form-container {
+    padding: 16px;
+
+    ion-card ion-card-content {
+      padding: 16px;
+    }
+  }
+
+  .filters-toolbar {
+    .filters-row {
+      ion-col {
+        margin-bottom: 8px;
+      }
+    }
+  }
 }
