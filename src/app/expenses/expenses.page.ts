@@ -55,6 +55,7 @@ export class ExpensesPage implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   totalExpenses = 0;
+  allExpensesCount = 0; // Track total expenses before filtering
   isAdmin = false;
 
   // Filters
@@ -137,6 +138,7 @@ export class ExpensesPage implements OnInit {
       this.api.getExpenses().subscribe({
         next: (data: any) => {
           this.expenses = data;
+          this.allExpensesCount = data.length; // Store original count for pagination
           this.totalExpenses = data.length;
           loading.dismiss();
           resolve();
@@ -558,10 +560,17 @@ export class ExpensesPage implements OnInit {
       });
     }
 
-    // Update total count for pagination
-    this.totalExpenses = filtered.length;
+    // Update total count - use filtered length if there are active filters, otherwise use all expenses count
+    if (this.hasActiveFilters()) {
+      this.totalExpenses = filtered.length;
+    } else {
+      this.totalExpenses = this.allExpensesCount;
+    }
 
-    return filtered;
+    // Apply pagination - slice the filtered data
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
   }
 
   // Selection methods
