@@ -1,46 +1,251 @@
-<div style="padding: 20px; text-align: center;">
-  <h2>Import Expenses</h2>
-  <p>Current Step: {{ currentStep }}</p>
-  <ion-button style="position: absolute;top: 0;left: 90%;" (click)="close()"><ion-icon name="close"></ion-icon></ion-button>
-
-  
-  <div *ngIf="currentStep === 1">
-    <p>Step 1: Upload</p>
-    <div class="upload-area" 
-         [class.dragover]="isDragOver"
-         (click)="fileInput.click()"
-         (dragover)="onDragOver($event)"
-         (dragleave)="onDragLeave($event)"
-         (drop)="onDrop($event)"
-         style="border: 2px dashed #ccc; padding: 40px; border-radius: 12px; margin-top: 20px;">
-      
-      <input #fileInput type="file" 
-             accept=".csv,.xlsx,.xls" 
-             (change)="onFileSelected($event)" 
-             style="display: none;">
-      
-      <p *ngIf="!selectedFile">Click to upload</p>
-      <p *ngIf="selectedFile">{{ selectedFile.name }}</p>
+  <div class="import-container">
+    <!-- Header -->
+    <div class="import-header">
+      <div class="header-left">
+        <h2>Import Expenses</h2>
+        <p class="step-indicator">Step {{ currentStep }} of 3</p>
+      </div>
+      <ion-button fill="clear" (click)="close()" class="close-btn">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
     </div>
-    
-    <ion-button expand="block" 
-                [disabled]="!selectedFile" 
-                (click)="parseFile()"
-                style="margin-top: 20px;">
-      Next
-    </ion-button>
-  </div>
 
-  <div *ngIf="currentStep === 2">
-    <p>Step 2: Map Columns</p>
-    <p>Headers found: {{ fileHeaders.length }}</p>
-    <ion-button (click)="previousStep()">Back</ion-button>
-    <ion-button (click)="validateData()">Next</ion-button>
-  </div>
+    <!-- Scrollable Content -->
+    <div class="import-content">
 
-  <div *ngIf="currentStep === 3">
-    <p>Step 3: Import</p>
-    <p>Ready to import {{ validData.length }} expenses</p>
-    <ion-button (click)="importExpenses()">Import</ion-button>
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="(currentStep / 3) * 100"></div>
+    </div>
+
+    <!-- Step 1: File Upload -->
+    <div *ngIf="currentStep === 1" class="step-content">
+      <div class="step-title">
+        <ion-icon name="cloud-upload-outline" class="step-icon"></ion-icon>
+        <h3>Upload Your File</h3>
+      </div>
+      <p class="step-description">Upload a CSV or Excel file containing your expense data</p>
+
+      <!-- Drag and Drop Zone -->
+      <div class="upload-area" 
+           [class.dragover]="isDragOver"
+           (click)="fileInput.click()"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        
+        <input #fileInput type="file" 
+               accept=".csv,.xlsx,.xls" 
+               (change)="onFileSelected($event)" 
+               style="display: none;">
+        
+        <div *ngIf="!selectedFile" class="upload-placeholder">
+          <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
+          <p>Drag & drop your file here</p>
+          <span class="upload-hint">or click to browse</span>
+          <span class="file-types">Supported: CSV, XLSX, XLS</span>
+        </div>
+        
+        <div *ngIf="selectedFile" class="file-selected">
+          <ion-icon name="document-outline" class="file-icon"></ion-icon>
+          <p class="file-name">{{ selectedFile.name }}</p>
+          <span class="file-size">{{ (selectedFile.size / 1024).toFixed(1) }} KB</span>
+        </div>
+      </div>
+
+      <!-- Template Download -->
+      <div class="template-section">
+        <p class="template-text">Don't have a file? Download our template</p>
+        <ion-button fill="outline" (click)="downloadTemplate()">
+          <ion-icon name="download-outline" slot="start"></ion-icon>
+          Download Template
+        </ion-button>
+      </div>
+
+      <!-- Actions -->
+      <div class="step-actions">
+        <ion-button expand="block" 
+                    [disabled]="!selectedFile" 
+                    (click)="parseFile()"
+                    class="next-btn">
+          Next
+          <ion-icon name="arrow-forward" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Step 2: Column Mapping -->
+    <div *ngIf="currentStep === 2" class="step-content">
+      <div class="step-title">
+        <ion-icon name="git-merge-outline" class="step-icon"></ion-icon>
+        <h3>Map Your Columns</h3>
+      </div>
+      <p class="step-description">Match your file columns to the expense fields</p>
+
+      <!-- Mapping Table -->
+      <div class="mapping-table">
+        <div class="mapping-header">
+          <div class="header-field">Expense Field</div>
+          <div class="header-column">File Column</div>
+          <div class="header-preview">Sample Value</div>
+        </div>
+        
+        <div class="mapping-row" *ngFor="let field of availableFields">
+          <div class="field-name">
+            {{ field.field }}
+            <span *ngIf="field.required" class="required-star">*</span>
+          </div>
+          <div class="column-select">
+            <ion-select 
+              [value]="getColumnMapping(field.column)"
+              placeholder="Select column"
+              (ionChange)="onColumnChange(field.column, $event)"
+              interface="popover">
+              <ion-select-option value="">-- None --</ion-select-option>
+              <ion-select-option *ngFor="let header of fileHeaders" [value]="header">
+                {{ header }}
+              </ion-select-option>
+            </ion-select>
+          </div>
+          <div class="sample-value">
+            {{ getPreviewValue(previewData[0], field.column) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Message -->
+      <div class="validation-message" *ngIf="!isMappingValid()">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <span>Please map all required fields ({{ getRequiredFieldsCount() }}/{{ getRequiredFieldsTotal() }} mapped)</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="step-actions">
+        <ion-button fill="outline" (click)="previousStep()">
+          <ion-icon name="arrow-back" slot="start"></ion-icon>
+          Back
+        </ion-button>
+        <ion-button expand="block" 
+                    [disabled]="!isMappingValid()" 
+                    (click)="validateData()"
+                    class="next-btn">
+          Validate Data
+          <ion-icon name="arrow-forward" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Step 3: Import -->
+    <div *ngIf="currentStep === 3" class="step-content">
+      <div *ngIf="!isImporting && !importResult">
+        <div class="step-title">
+          <ion-icon name="checkmark-circle-outline" class="step-icon"></ion-icon>
+          <h3>Ready to Import</h3>
+        </div>
+        <p class="step-description">Review your data before importing</p>
+
+        <!-- Summary -->
+        <div class="import-summary">
+          <div class="summary-item">
+            <span class="summary-label">Total Records</span>
+            <span class="summary-value">{{ validData.length }}</span>
+          </div>
+          <div class="summary-item" *ngIf="validationErrors.length > 0">
+            <span class="summary-label">Warnings</span>
+            <span class="summary-value warning">{{ validationErrors.length }}</span>
+          </div>
+        </div>
+
+        <!-- Errors Display -->
+        <div class="errors-list" *ngIf="validationErrors.length > 0">
+          <h4>Validation Warnings</h4>
+          <ul>
+            <li *ngFor="let error of validationErrors | slice:0:5">{{ error }}</li>
+          </ul>
+          <p *ngIf="validationErrors.length > 5" class="more-errors">
+            + {{ validationErrors.length - 5 }} more warnings
+          </p>
+        </div>
+
+        <!-- Preview Table -->
+        <div class="preview-section" *ngIf="validData.length > 0">
+          <h4>Preview (First 3 records)</h4>
+          <div class="preview-table">
+            <div class="preview-row header">
+              <span *ngFor="let field of availableFields.slice(0,6)">{{ field.field }}</span>
+            </div>
+            <div class="preview-row" *ngFor="let row of validData | slice:0:3">
+              <span>{{ row['expense_date'] || '-' }}</span>
+              <span>{{ row['amount'] || '-' }}</span>
+              <span>{{ row['category'] || '-' }}</span>
+              <span>{{ row['description'] || '-' }}</span>
+              <span>{{ row['paid_through'] || '-' }}</span>
+              <span>{{ row['currency_id'] || '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="step-actions">
+          <ion-button fill="outline" (click)="previousStep()">
+            <ion-icon name="arrow-back" slot="start"></ion-icon>
+            Back
+          </ion-button>
+          <ion-button expand="block" 
+                      (click)="importExpenses()"
+                      class="next-btn">
+            <ion-icon name="cloud-upload" slot="start"></ion-icon>
+            Import {{ validData.length }} Expenses
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Importing Progress -->
+      <div *ngIf="isImporting" class="importing-progress">
+        <div class="spinner-container">
+          <ion-spinner name="circles" size="large"></ion-spinner>
+        </div>
+        <h3>Importing...</h3>
+        <p>Please wait while we process your expenses</p>
+        <div class="progress-info">
+          <span>Progress: {{ importProgress }}%</span>
+        </div>
+      </div>
+
+      <!-- Import Complete -->
+      <div *ngIf="importResult && !isImporting" class="import-complete">
+        <div class="result-icon" [class.success]="importResult.success > 0" [class.partial]="importResult.failed > 0">
+          <ion-icon *ngIf="importResult.success > 0" name="checkmark-circle"></ion-icon>
+          <ion-icon *ngIf="importResult.failed > 0" name="warning-outline"></ion-icon>
+        </div>
+        <h3>Import Complete!</h3>
+        
+        <div class="result-stats">
+          <div class="stat success">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span class="stat-value">{{ importResult.success }}</span>
+            <span class="stat-label">Successful</span>
+          </div>
+          <div class="stat failed" *ngIf="importResult.failed > 0">
+            <ion-icon name="close-circle-outline"></ion-icon>
+            <span class="stat-value">{{ importResult.failed }}</span>
+            <span class="stat-label">Failed</span>
+          </div>
+        </div>
+
+        <p class="result-message" *ngIf="importResult.success > 0">
+          Your expenses have been imported successfully!
+        </p>
+        <p class="result-message" *ngIf="importResult.failed > 0">
+          Some records could not be imported. Please check the data and try again.
+        </p>
+
+        <div class="step-actions">
+          <ion-button expand="block" (click)="close()" class="done-btn">
+            Done
+          </ion-button>
+        </div>
+      </div>
+    </div>
+    </div>
   </div>
-</div>

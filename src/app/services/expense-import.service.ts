@@ -33,6 +33,10 @@ export class ExpenseImportService {
     { field: 'paid_through', column: 'paid_through', required: true },
     { field: 'currency', column: 'currency_id', required: false },
     { field: 'notes', column: 'notes', required: false },
+    // Custom fields
+    { field: 'vendor', column: 'vendor', required: false },
+    { field: 'receipt_number', column: 'receipt_number', required: false },
+    { field: 'reference', column: 'reference', required: false },
   ];
 
   // Default mappings based on common CSV headers
@@ -49,6 +53,13 @@ export class ExpenseImportService {
     'paid through': 'paid_through',
     'account': 'paid_through',
     'currency': 'currency_id',
+    // Custom field mappings
+    'vendor': 'vendor',
+    'receipt': 'receipt_number',
+    'receipt_number': 'receipt_number',
+    'receipt #': 'receipt_number',
+    'reference': 'reference',
+    'ref': 'reference',
   };
 
   /**
@@ -256,10 +267,10 @@ export class ExpenseImportService {
    * Generate sample CSV template
    */
   generateTemplate(): string {
-    const headers = ['Date', 'Amount', 'Category', 'Description', 'Paid Through', 'Currency'];
+    const headers = ['Date', 'Amount', 'Category', 'Description', 'Paid Through', 'Currency', 'Vendor', 'Receipt Number', 'Reference'];
     const sampleData = [
-      ['2026-01-15', '150.00', 'Office Supplies', 'Printer paper and ink', 'Cash', 'GHS'],
-      ['2026-01-20', '250.00', 'Transportation', 'Taxi to meeting', 'MOMO', 'GHS'],
+      ['2026-01-15', '150.00', 'Office Supplies', 'Printer paper and ink', 'Cash', 'GHS', 'Office Depot', 'REC-001', 'REF-001'],
+      ['2026-01-20', '250.00', 'Transportation', 'Taxi to meeting', 'MOMO', 'GHS', 'Uber', 'REC-002', 'REF-002'],
     ];
 
     return Papa.unparse({

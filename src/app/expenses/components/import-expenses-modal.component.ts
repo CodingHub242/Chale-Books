@@ -51,6 +51,40 @@ export class ImportExpensesModalComponent implements OnInit {
     { field: 'Currency', column: 'currency_id', required: false },
   ];
 
+  // Dynamic custom fields that user can add
+  customMappingFields: { field: string, column: string, required: boolean }[] = [];
+
+  // Get all fields (base + custom)
+  get allFields() {
+    return [...this.availableFields, ...this.customMappingFields];
+  }
+
+  addCustomField() {
+    this.customMappingFields.push({ 
+      field: `Custom Field ${this.customMappingFields.length + 1}`, 
+      column: `custom_field_${Date.now()}`,
+      required: false 
+    });
+  }
+
+  removeCustomField(index: number) {
+    const field = this.customMappingFields[index];
+    // Remove any mapping for this field
+    const mappedCol = Object.keys(this.columnMapping).find(key => 
+      this.columnMapping[key] === field.column
+    );
+    if (mappedCol) {
+      delete this.columnMapping[mappedCol];
+    }
+    this.customMappingFields.splice(index, 1);
+  }
+
+  updateCustomFieldName(index: number, event: any) {
+    const input = event.target as HTMLInputElement;
+    this.customMappingFields[index].field = input.value || `Custom Field ${index + 1}`;
+    this.customMappingFields[index].column = input.value?.toLowerCase().replace(/\s+/g, '_') || `custom_field_${index}`;
+  }
+
   // Paid through options from parent
   paidThroughOptions = [
     { value: 'MOMO', label: 'MOMO' },
@@ -199,8 +233,32 @@ export class ImportExpensesModalComponent implements OnInit {
     this.isImporting = true;
     this.importProgress = 0;
     
+    // Prepare expenses data - include any extra fields in custom_fields
+    const expensesData = this.validData.map(row => {
+      // Separate standard fields from custom fields
+      const standardFields = ['expense_date', 'amount', 'category', 'description', 'paid_through', 'currency_id'];
+      const customFieldsData: { [key: string]: any } = {};
+      
+      // Extract custom fields
+      Object.keys(row).forEach(key => {
+        if (!standardFields.includes(key) && row[key]) {
+          customFieldsData[key] = row[key];
+        }
+      });
+      
+      return {
+        expense_date: row['expense_date'],
+        amount: row['amount'],
+        category: row['category'] || 'Uncategorized',
+        description: row['description'] || '',
+        paid_through: row['paid_through'],
+        currency_id: row['currency_id'] || 1,
+        custom_fields: Object.keys(customFieldsData).length > 0 ? customFieldsData : null
+      };
+    });
+    
     // Use bulk import API for better performance
-    this.api.importExpenses(this.validData).subscribe({
+    this.api.importExpenses(expensesData).subscribe({
       next: (result: any) => {
         this.isImporting = false;
         this.importResult = { 
@@ -266,6 +324,18 @@ export class ImportExpensesModalComponent implements OnInit {
     // Could implement currency lookup here
     // For now, return default
     return 1;
+  }
+
+  getRequiredFieldsCount(): number {
+    const requiredFields = this.availableFields.filter(f => f.required);
+    const mappedRequired = requiredFields.filter(f => 
+      Object.values(this.columnMapping).includes(f.column)
+    );
+    return mappedRequired.length;
+  }
+
+  getRequiredFieldsTotal(): number {
+    return this.availableFields.filter(f => f.required).length;
   }
 
   showError(message: string) {

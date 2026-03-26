@@ -272,7 +272,7 @@
 
           <!-- Custom Fields Section -->
 
-          <div class="custom-fields-section" *ngIf="isAdmin">
+          <div class="custom-fields-section">
             <h3>Custom Fields</h3>
             <p class="custom-fields-hint">Add any additional information you need to track</p>
             
@@ -324,10 +324,12 @@
     </ion-card>
   </div>
 
-  <!-- Import Modal -->
-  <ion-modal [isOpen]="isImportModalOpen" (didDismiss)="onImportModalDismiss($event)">
+  <!-- Import Modal - Full screen centered -->
+  <ion-modal [isOpen]="isImportModalOpen" (didDismiss)="onImportModalDismiss($event)" [backdropDismiss]="true" class="import-modal">
     <ng-template>
-      <app-import-expenses-modal></app-import-expenses-modal>
+      <div class="import-modal-wrapper">
+        <app-import-expenses-modal></app-import-expenses-modal>
+      </div>
     </ng-template>
   </ion-modal>
 </ion-content>
