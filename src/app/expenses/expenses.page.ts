@@ -762,7 +762,7 @@ export class ExpensesPage implements OnInit {
     this.isImportModalOpen = true;
     
     // Listen for import complete event
-    const handler = (event: Event) => {
+    const importHandler = (event: Event) => {
       const customEvent = event as CustomEvent;
       const { success, failed } = customEvent.detail;
       this.isImportModalOpen = false;
@@ -772,10 +772,17 @@ export class ExpensesPage implements OnInit {
       );
       this.loadExpenses();
       // Remove the listener
-      document.removeEventListener('importComplete', handler);
+      document.removeEventListener('importComplete', importHandler);
     };
     
-    document.addEventListener('importComplete', handler);
+    // Listen for close modal event
+    const closeHandler = () => {
+      this.isImportModalOpen = false;
+      document.removeEventListener('closeImportModal', closeHandler);
+    };
+    
+    document.addEventListener('importComplete', importHandler);
+    document.addEventListener('closeImportModal', closeHandler);
   }
 
   onImportModalDismiss(event: any) {

@@ -1,16 +1,15 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
   IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
-  IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner, IonModal
+  IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
 } from '@ionic/angular/standalone';
-import { ModalController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { 
   closeOutline, cloudUploadOutline, arrowForwardOutline, arrowBackOutline, 
   downloadOutline, checkmarkCircleOutline, warningOutline, alertCircleOutline, 
-  informationCircleOutline
+  informationCircleOutline, closeCircleOutline
 } from 'ionicons/icons';
 import { ExpenseImportService, ParsedRow, ImportResult } from '../../services/expense-import.service';
 import { Api } from '../../services/api';
@@ -61,8 +60,7 @@ export class ImportExpensesModalComponent implements OnInit {
 
   constructor(
     private importService: ExpenseImportService,
-    private api: Api,
-    private modalController: ModalController
+    private api: Api
   ) {
     addIcons({ 
       closeOutline, 
@@ -73,7 +71,8 @@ export class ImportExpensesModalComponent implements OnInit {
       checkmarkCircleOutline, 
       warningOutline, 
       alertCircleOutline,
-      informationCircleOutline
+      informationCircleOutline,
+      closeCircleOutline
     });
   }
 
@@ -274,6 +273,11 @@ export class ImportExpensesModalComponent implements OnInit {
   }
 
   close() {
-    this.modalController.dismiss();
+    // Emit event to parent to close the modal
+    const event = new CustomEvent('closeImportModal', {
+      bubbles: true,
+      composed: true
+    });
+    document.dispatchEvent(event);
   }
 }

@@ -325,7 +325,7 @@
   </div>
 
   <!-- Import Modal -->
-  <ion-modal [isOpen]="isImportModalOpen" (didDismiss)="onImportModalDismiss($event)" [breakpoints]="[0.5, 0.9]" [initialBreakpoint]="0.9">
+  <ion-modal [isOpen]="isImportModalOpen" (didDismiss)="onImportModalDismiss($event)">
     <ng-template>
       <app-import-expenses-modal></app-import-expenses-modal>
     </ng-template>
