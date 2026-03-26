@@ -90,9 +90,26 @@
           <div class="header-preview">Sample Value</div>
         </div>
         
-        <div class="mapping-row" *ngFor="let field of availableFields">
+        <div class="mapping-row" *ngFor="let field of allFields; let i = index">
           <div class="field-name">
-            {{ field.field }}
+            <!-- Show input for custom fields, plain text for standard fields -->
+            <ng-container *ngIf="i >= availableFields.length; else standardField">
+              <input 
+                [value]="customMappingFields[i - availableFields.length].field" 
+                (blur)="updateCustomFieldName(i - availableFields.length, $event)"
+                placeholder="Custom field name"
+                class="custom-field-input">
+              <ion-button 
+                fill="clear" 
+                size="small" 
+                color="danger"
+                (click)="removeCustomField(i - availableFields.length)">
+                <ion-icon name="trash" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ng-container>
+            <ng-template #standardField>
+              {{ field.field }}
+            </ng-template>
             <span *ngIf="field.required" class="required-star">*</span>
           </div>
           <div class="column-select">
@@ -111,6 +128,14 @@
             {{ getPreviewValue(previewData[0], field.column) }}
           </div>
         </div>
+      </div>
+
+      <!-- Add Custom Field Button -->
+      <div class="add-custom-field">
+        <ion-button fill="outline" (click)="addCustomField()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Add Custom Field
+        </ion-button>
       </div>
 
       <!-- Validation Message -->
@@ -172,7 +197,7 @@
           <h4>Preview (First 3 records)</h4>
           <div class="preview-table">
             <div class="preview-row header">
-              <span *ngFor="let field of availableFields.slice(0,6)">{{ field.field }}</span>
+              <span *ngFor="let field of allFields.slice(0,6)">{{ field.field }}</span>
             </div>
             <div class="preview-row" *ngFor="let row of validData | slice:0:3">
               <span>{{ row['expense_date'] || '-' }}</span>

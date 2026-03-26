@@ -79,10 +79,11 @@ export class ImportExpensesModalComponent implements OnInit {
     this.customMappingFields.splice(index, 1);
   }
 
-  updateCustomFieldName(index: number, event: any) {
+  updateCustomFieldName(index: number, event: Event) {
     const input = event.target as HTMLInputElement;
-    this.customMappingFields[index].field = input.value || `Custom Field ${index + 1}`;
-    this.customMappingFields[index].column = input.value?.toLowerCase().replace(/\s+/g, '_') || `custom_field_${index}`;
+    const newName = input.value || `Custom Field ${index + 1}`;
+    this.customMappingFields[index].field = newName;
+    this.customMappingFields[index].column = newName.toLowerCase().replace(/\s+/g, '_');
   }
 
   // Paid through options from parent
@@ -199,7 +200,7 @@ export class ImportExpensesModalComponent implements OnInit {
   }
 
   isMappingValid(): boolean {
-    // Check required fields are mapped
+    // Check required fields are mapped (only base fields, not custom fields)
     const requiredFields = this.availableFields.filter(f => f.required);
     const mappedRequired = requiredFields.filter(f => 
       Object.values(this.columnMapping).includes(f.column)
@@ -209,9 +210,12 @@ export class ImportExpensesModalComponent implements OnInit {
   }
 
   validateData() {
+    // Pass the column mapping - custom field mappings are included
+    // because they're added when user selects a column for a custom field
     const result: ImportResult = this.importService.transformData(
       this.parsedRows, 
-      this.columnMapping
+      this.columnMapping,
+      this.customMappingFields
     );
     
     this.validData = result.data;
@@ -327,6 +331,7 @@ export class ImportExpensesModalComponent implements OnInit {
   }
 
   getRequiredFieldsCount(): number {
+    // Only count required fields from base availableFields
     const requiredFields = this.availableFields.filter(f => f.required);
     const mappedRequired = requiredFields.filter(f => 
       Object.values(this.columnMapping).includes(f.column)
@@ -335,6 +340,7 @@ export class ImportExpensesModalComponent implements OnInit {
   }
 
   getRequiredFieldsTotal(): number {
+    // Only count required fields from base availableFields
     return this.availableFields.filter(f => f.required).length;
   }
 

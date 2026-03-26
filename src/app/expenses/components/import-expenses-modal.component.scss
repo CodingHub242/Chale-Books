@@ -479,6 +479,27 @@
   }
 }
 
+// Add Custom Field
+.add-custom-field {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+// Custom field input
+.custom-field-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--ion-color-medium);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--ion-color-light);
+  
+  &:focus {
+    border-color: var(--ion-color-primary);
+    outline: none;
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 576px) {
   .mapping-table {

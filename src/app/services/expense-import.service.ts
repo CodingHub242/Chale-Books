@@ -26,7 +26,7 @@ export class ExpenseImportService {
 
   // Available expense fields that can be mapped
   readonly availableFields: ImportMapping[] = [
-    { field: 'date', column: 'expense_date', required: true },
+    { field: 'date', column: 'expense_date', required: false },
     { field: 'amount', column: 'amount', required: true },
     { field: 'category', column: 'category', required: false },
     { field: 'description', column: 'description', required: false },
@@ -158,16 +158,22 @@ export class ExpenseImportService {
 
   /**
    * Validate and transform data based on mappings
+   * @param rows - parsed data rows
+   * @param columnMapping - mapping from file columns to app fields
+   * @param extraFields - optional additional fields beyond the built-in ones
    */
-  transformData(rows: ParsedRow[], columnMapping: { [key: string]: string }): ImportResult {
+  transformData(rows: ParsedRow[], columnMapping: { [key: string]: string }, extraFields?: ImportMapping[]): ImportResult {
     const errors: string[] = [];
     const transformedData: ParsedRow[] = [];
+
+    // Combine built-in fields with any extra fields
+    const allFields = extraFields ? [...this.availableFields, ...extraFields] : this.availableFields;
 
     rows.forEach((row, index) => {
       const transformedRow: ParsedRow = {};
       let hasError = false;
 
-      this.availableFields.forEach(field => {
+      allFields.forEach(field => {
         const sourceColumn = Object.keys(columnMapping).find(
           key => columnMapping[key] === field.column
         );
@@ -190,8 +196,22 @@ export class ExpenseImportService {
         }
       });
 
-      if (!hasError && this.isValidRow(transformedRow)) {
+      // Check if row has minimum required data (amount and paid_through are required)
+      // Date is optional - if missing, will be set to today's date during import
+      const hasAmount = transformedRow['amount'] !== null && transformedRow['amount'] !== undefined;
+      const hasPaidThrough = transformedRow['paid_through'] && transformedRow['paid_through'] !== '';
+      const hasDate = transformedRow['expense_date'] !== null && transformedRow['expense_date'] !== undefined;
+      
+      if (!hasError && hasAmount && hasPaidThrough) {
+        // If date is missing, set to today's date
+        if (!hasDate) {
+          transformedRow['expense_date'] = new Date().toISOString().split('T')[0];
+        }
         transformedData.push(transformedRow);
+      } else if (!hasAmount) {
+        errors.push(`Row ${index + 1}: Amount is required`);
+      } else if (!hasPaidThrough) {
+        errors.push(`Row ${index + 1}: Paid Through is required`);
       }
     });
 
@@ -258,9 +278,11 @@ export class ExpenseImportService {
 
   /**
    * Check if row has minimum required data
+   * Only amount and paid_through are truly required
    */
   private isValidRow(row: ParsedRow): boolean {
-    return !!(row['expense_date'] && row['amount'] !== null && row['paid_through']);
+    // Amount and paid_through are required
+    return row['amount'] !== null && row['amount'] !== undefined && !!row['paid_through'];
   }
 
   /**
