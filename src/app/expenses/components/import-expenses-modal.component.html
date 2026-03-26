@@ -1,15 +1,9 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="primary">
-    <ion-title>Import Expenses</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="close()">
-        <ion-icon name="close-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="import-content">
+  <div class="close-button-container">
+    <ion-button fill="clear" (click)="close()">
+      <ion-icon name="close-outline"></ion-icon>
+    </ion-button>
+  </div>
   <!-- Step 1: File Upload -->
   <div class="import-step" *ngIf="currentStep === 1">
     <div class="step-header">

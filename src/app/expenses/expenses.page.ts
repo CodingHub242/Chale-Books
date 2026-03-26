@@ -8,7 +8,7 @@ import {
   IonSelect, IonSelectOption, IonTextarea, IonButtons, IonBackButton, IonGrid,
   IonRow, IonCol, IonBadge, IonSearchbar, ToastController, LoadingController,
   AlertController, IonChip,
-  IonMenuButton
+  IonMenuButton, IonModal
 } from '@ionic/angular/standalone';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
@@ -28,7 +28,8 @@ import { ImportExpensesModalComponent } from './components/import-expenses-modal
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, ReactiveFormsModule, FormsModule,
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonFab, IonFabButton, IonIcon, IonSelect, IonSelectOption, IonTextarea,
-    IonButtons, IonBackButton,IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonSearchbar, IonChip
+    IonButtons, IonBackButton,IonMenuButton, IonGrid, IonRow, IonCol, IonBadge, IonSearchbar, IonChip,
+    IonModal
   ]
 })
 export class ExpensesPage implements OnInit {

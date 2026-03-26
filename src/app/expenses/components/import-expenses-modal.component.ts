@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
-  IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
+  IonContent, IonTitle, IonToolbar, IonButton, IonButtons,
   IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
 } from '@ionic/angular/standalone';
 import { ModalController } from '@ionic/angular';
@@ -23,7 +23,7 @@ import { Api } from '../../services/api';
   imports: [
     CommonModule,
     FormsModule,
-    IonContent, IonHeader, IonTitle, IonToolbar, IonButton, IonButtons,
+    IonContent, IonTitle, IonToolbar, IonButton, IonButtons,
     IonIcon, IonSelect, IonSelectOption, IonChip, IonSpinner
   ]
 })
