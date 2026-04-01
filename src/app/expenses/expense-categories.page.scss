@@ -1,0 +1,156 @@
+.form-container {
+  padding: 16px;
+}
+
+ion-card {
+  margin: 0;
+}
+
+ion-card-content {
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+ion-item {
+  margin-bottom: 12px;
+}
+
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.color-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.selected {
+    border-color: var(--ion-color-dark);
+  }
+
+  .color-check {
+    color: white;
+    font-size: 16px;
+  }
+}
+
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.categories-container {
+  padding: 16px;
+}
+
+.categories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  background: var(--ion-card-background);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .category-color {
+    width: 8px;
+    height: 48px;
+    border-radius: 4px;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+
+  .category-info {
+    flex: 1;
+    min-width: 0;
+
+    .category-name {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-text-color);
+    }
+
+    .category-description {
+      margin: 4px 0 0 0;
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .category-meta {
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+
+      .expense-count {
+        font-size: 0.75rem;
+        color: var(--ion-color-medium);
+        background: var(--ion-color-light);
+        padding: 2px 8px;
+        border-radius: 10px;
+      }
+    }
+  }
+
+  .category-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 8px 0 24px 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+ion-fab {
+  margin: 16px;
+}

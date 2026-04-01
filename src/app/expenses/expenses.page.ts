@@ -766,6 +766,11 @@ export class ExpensesPage implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
+  // Open categories page
+  openCategories() {
+    this.router.navigate(['/expense-categories']);
+  }
+
   // Open import modal
   openImportModal() {
     this.isImportModalOpen = true;
