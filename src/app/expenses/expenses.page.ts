@@ -14,7 +14,7 @@ import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { add, trash, create, close, arrowBack, closeCircle, filter, cloudUploadOutline } from 'ionicons/icons';
+import { add, trash, create, close, arrowBack, closeCircle, filter, cloudUploadOutline, folder } from 'ionicons/icons';
 import { ImportExpensesModalComponent } from './components/import-expenses-modal.component';
 
 @Component({
@@ -84,7 +84,7 @@ export class ExpensesPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController
   ) {
-    addIcons({ add, arrowBack, trash, create, close, closeCircle, filter, 'cloud-upload': cloudUploadOutline });
+    addIcons({ add, arrowBack,folder, trash, create, close, closeCircle, filter, 'cloud-upload': cloudUploadOutline });
     this.initForm();
   }
 
