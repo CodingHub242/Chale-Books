@@ -669,13 +669,13 @@ export class ExpensesPage implements OnInit {
     }
   }
 
-  // Row click handler
+  // Row click handler - navigate to details page
   onRowClick(expense: any, event: Event) {
     // If clicking on checkbox, don't trigger row click
     if ((event.target as HTMLElement).tagName === 'ION-CHECKBOX') {
       return;
     }
-    this.editExpense(expense);
+    this.router.navigate(['/expense-details', expense.id]);
   }
 
   // Bulk actions

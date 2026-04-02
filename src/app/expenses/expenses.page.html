@@ -71,11 +71,11 @@
   </ion-toolbar>
 
   <!-- Category Filter Chips -->
-  <ion-toolbar *ngIf="showCategoryFilter">
+  <!-- <ion-toolbar *ngIf="showCategoryFilter">
     <ion-chip [color]="!categoryFilter ? 'primary' : 'medium'" (click)="setCategoryFilter('')">
       <ion-label>All</ion-label>
     </ion-chip>
-    <!-- <ion-chip *ngFor="let category of expenseCategories" 
+    <ion-chip *ngFor="let category of expenseCategories" 
              [color]="categoryFilter === category.name.toString() ? 'primary' : 'medium'"
              (click)="setCategoryFilter(category.name.toString())"
              class="category-chip">
@@ -88,8 +88,8 @@
           <ion-icon name="trash" slot="icon-only"></ion-icon>
         </ion-button>
       </ion-buttons>
-    </ion-chip> -->
-  </ion-toolbar>
+    </ion-chip>
+  </ion-toolbar> -->
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -133,12 +133,12 @@
                 (ionChange)="toggleSelect(expense, $event)">
               </ion-checkbox>
             </td>
-            <td class="clickable category-column" (click)="editExpense(expense)">
+            <td class="clickable category-column">
               <div class="category-info">
                 <span class="category-name">{{ expense.category?.name || expense.category }}</span>
               </div>
             </td>
-            <td class="clickable description-column" (click)="editExpense(expense)">
+            <td class="clickable description-column">
               <div class="description-cell">
                 <span class="description-text">{{ expense.description || 'No description' }}</span>
                 <div *ngIf="expense.custom_fields && getCustomFieldKeys(expense.custom_fields).length > 0" class="custom-fields-preview">
@@ -146,12 +146,12 @@
                 </div>
               </div>
             </td>
-            <td class="clickable date-column" (click)="editExpense(expense)">
+            <td class="clickable date-column">
               <div class="date-info">
                 <span class="formatted-date">{{ formatDate(expense.expense_date) }}</span>
               </div>
             </td>
-            <td class="clickable amount-column" (click)="editExpense(expense)">
+            <td class="clickable amount-column">
               <div class="amount-info">
                 <span class="amount">{{ expense.amount | number:'1.2-2' }}</span>
                 <span class="currency">{{ expense.currency?.code }}</span>

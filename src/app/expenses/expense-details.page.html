@@ -1,0 +1,116 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Expense Details</ion-title>
+    <ion-buttons slot="end" *ngIf="expense">
+      <ion-button (click)="editExpense()" title="Edit Expense">
+        <ion-icon name="create" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading expense details...</p>
+  </div>
+
+  <!-- Expense Details -->
+  <div *ngIf="!isLoading && expense" class="details-container">
+    <!-- Header Card -->
+    <ion-card class="header-card">
+      <ion-card-content>
+        <div class="expense-header">
+          <div class="category-badge" [style.background-color]="expense.category?.color || '#6c757d'">
+            {{ expense.category?.name || expense.category || 'Uncategorized' }}
+          </div>
+          <div class="amount-display">
+            <span class="currency">{{ expense.currency?.code || 'GHS' }}</span>
+            <span class="amount">{{ formatAmount(expense.amount) }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Details Grid -->
+    <ion-card>
+      <ion-card-content>
+        <div class="details-list">
+          <!-- Date -->
+          <div class="detail-row">
+            <div class="detail-label">Date</div>
+            <div class="detail-value">{{ formatDate(expense.expense_date) }}</div>
+          </div>
+
+          <!-- Paid Through -->
+          <div class="detail-row">
+            <div class="detail-label">Paid Through</div>
+            <div class="detail-value">{{ expense.paid_through }}</div>
+          </div>
+
+          <!-- Currency -->
+          <div class="detail-row">
+            <div class="detail-label">Currency</div>
+            <div class="detail-value">{{ expense.currency?.code }} - {{ expense.currency?.name }}</div>
+          </div>
+
+          <!-- Description -->
+          <div class="detail-row" *ngIf="expense.description">
+            <div class="detail-label">Description</div>
+            <div class="detail-value description">{{ expense.description }}</div>
+          </div>
+
+          <!-- Created At -->
+          <div class="detail-row" *ngIf="expense.created_at">
+            <div class="detail-label">Created</div>
+            <div class="detail-value">{{ formatDate(expense.created_at) }}</div>
+          </div>
+
+          <!-- Updated At -->
+          <div class="detail-row" *ngIf="expense.updated_at">
+            <div class="detail-label">Last Updated</div>
+            <div class="detail-value">{{ formatDate(expense.updated_at) }}</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Custom Fields -->
+    <ion-card *ngIf="getCustomFields().length > 0">
+      <ion-card-content>
+        <h3 class="section-title">Custom Fields</h3>
+        <div class="custom-fields-list">
+          <div class="custom-field" *ngFor="let field of getCustomFields()">
+            <div class="field-label">{{ field.key }}</div>
+            <div class="field-value">{{ field.value }}</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <ion-button expand="block" color="primary" (click)="editExpense()">
+        <ion-icon name="create" slot="start"></ion-icon>
+        Edit Expense
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Not Found State -->
+  <div *ngIf="!isLoading && !expense" class="not-found">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <h2>Expense Not Found</h2>
+    <p>The requested expense could not be found.</p>
+    <ion-button (click)="goBack()">
+      <ion-icon name="arrow-back" slot="start"></ion-icon>
+      Back to Expenses
+    </ion-button>
+  </div>
+</ion-content>
