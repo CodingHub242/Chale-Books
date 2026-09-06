@@ -1,5 +1,14 @@
 // Professional Quote Templates Page Styling
+ion-header {
+  --background: #1a1a2e;
+  --color: white;
+  box-shadow: none;
+}
 
+ion-toolbar {
+  --background: #1a1a2e;
+  --color: white;
+}
 // Bulk Actions Toolbar
 .bulk-actions-toolbar {
   --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

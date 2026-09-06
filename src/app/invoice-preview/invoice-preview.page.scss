@@ -4,7 +4,16 @@
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 20px;
 }
+ion-header {
+  --background: #1a1a2e;
+  --color: white;
+  box-shadow: none;
+}
 
+ion-toolbar {
+  --background: #1a1a2e;
+  --color: white;
+}
 .preview-grid {
   display: grid;
   grid-template-columns: 1fr 400px;

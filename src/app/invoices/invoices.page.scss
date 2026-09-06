@@ -1,5 +1,14 @@
 // Professional Invoices Table Styling
+ion-header {
+  --background: #1a1a2e;
+  --color: white;
+  box-shadow: none;
+}
 
+ion-toolbar {
+  --background: #1a1a2e;
+  --color: white;
+}
 // Filters Toolbar
 .filters-toolbar {
   --background: #f8f9fa;
