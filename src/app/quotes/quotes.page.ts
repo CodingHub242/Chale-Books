@@ -356,8 +356,6 @@ export class QuotesPage implements OnInit {
       await this.openAddClientAlert();
     }
   }
-    });
-  }
 
   async submitQuote() {
     if (this.quoteForm.valid) {
