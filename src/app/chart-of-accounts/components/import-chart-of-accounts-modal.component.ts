@@ -11,6 +11,7 @@ import {
   downloadOutline, checkmarkCircleOutline, warningOutline, alertCircleOutline, 
   informationCircleOutline, closeCircleOutline
 } from 'ionicons/icons';
+import * as XLSX from 'xlsx';
 import { Api } from '../../services/api';
 
 @Component({
@@ -141,7 +142,7 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
       this.previewData = result.rows;
 
       this.columnMapping = {};
-      this.fileHeaders.forEach((header, index) => {
+      this.fileHeaders.forEach((header: string) => {
         const normalizedHeader = header.toLowerCase().trim();
         const mappedField = this.availableFields.find(f => 
           normalizedHeader.includes(f.column.toLowerCase()) ||
@@ -173,15 +174,15 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
             for (let i = 1; i < lines.length; i++) {
               const values = lines[i].split(',').map((v: string) => v.replace(/"/g, '').trim());
               const row: any = {};
-              headers.forEach((header, index) => {
+              headers.forEach((header: string, index: number) => {
                 row[header] = values[index] || '';
               });
               rows.push(row);
             }
             resolve({ headers, rows });
-          } catch (error) {
-            reject(error);
-          }
+            } catch (error: any) {
+              reject(error);
+            }
         };
         reader.onerror = reject;
         reader.readAsText(file);
@@ -196,9 +197,9 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' }) as any[];
             const headers = jsonData.length > 0 ? Object.keys(jsonData[0]) : [];
             resolve({ headers, rows: jsonData });
-          } catch (error) {
-            reject(error);
-          }
+            } catch (error: any) {
+              reject(error);
+            }
         };
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
@@ -251,7 +252,7 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
     this.validData = [];
     this.validationErrors = [];
 
-    this.parsedRows.forEach((row, index) => {
+    this.parsedRows.forEach((row: any, index: number) => {
       const mappedRow: any = {};
       let hasError = false;
 
@@ -313,7 +314,7 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
     this.isImporting = true;
     this.importProgress = 0;
 
-    const promises = this.validData.map((row, index) => {
+    const promises = this.validData.map((row: any, index: number) => {
       return new Promise((resolve) => {
         setTimeout(() => {
           this.api.createChartOfAccount({
