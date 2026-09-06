@@ -7,12 +7,13 @@ import {
   IonButton, IonInput, IonCard, IonCardContent, IonButtons, IonBackButton,
   IonGrid, IonRow, IonCol, IonIcon, IonBadge, ToastController, LoadingController,
   AlertController, IonFab, IonFabButton, IonSelect, IonSelectOption, IonSearchbar,
-  IonCheckbox
+  IonCheckbox, IonModal
 } from '@ionic/angular/standalone';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { addIcons } from 'ionicons';
 import { add, trash, create, close, arrowBack, closeCircle, list, ellipsisVertical } from 'ionicons/icons';
+import { ImportChartOfAccountsModalComponent } from './components/import-chart-of-accounts-modal.component';
 
 @Component({
   selector: 'app-chart-of-accounts',
@@ -24,7 +25,9 @@ import { add, trash, create, close, arrowBack, closeCircle, list, ellipsisVertic
     IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule,
     IonList, IonItem, IonLabel, IonButton, IonInput, IonCard, IonCardContent,
     IonButtons, IonBackButton, IonGrid, IonRow, IonCol, IonIcon, IonBadge,
-    IonFab, IonFabButton, IonSelect, IonSelectOption, IonSearchbar, IonCheckbox
+    IonFab, IonFabButton, IonSelect, IonSelectOption, IonSearchbar, IonCheckbox,
+    IonModal,
+    ImportChartOfAccountsModalComponent
   ]
 })
 export class ChartOfAccountsPage implements OnInit {
@@ -43,6 +46,7 @@ export class ChartOfAccountsPage implements OnInit {
   searchTerm = '';
   activeFilter: string = 'active';
   selectAll = false;
+  isImportModalOpen = false;
 
   typeOptions = [
     { value: 'asset', label: 'Asset' },
@@ -106,6 +110,12 @@ export class ChartOfAccountsPage implements OnInit {
       return;
     }
     this.loadAccounts();
+
+    const closeHandler = () => {
+      this.isImportModalOpen = false;
+      document.removeEventListener('closeImportModal', closeHandler);
+    };
+    document.addEventListener('closeImportModal', closeHandler);
   }
 
   async loadAccounts() {
@@ -314,37 +324,11 @@ export class ChartOfAccountsPage implements OnInit {
   }
 
   openImportModal() {
-    const modal = document.createElement('app-import-chart-of-accounts-modal');
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.zIndex = '1000';
-    modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
-    modal.style.display = 'flex';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
+    this.isImportModalOpen = true;
+  }
 
-    const closeHandler = () => {
-      modal.remove();
-      document.removeEventListener('closeImportModal', closeHandler);
-    };
-
-    modal.addEventListener('closeImportModal', closeHandler);
-    document.body.appendChild(modal);
-
-    setTimeout(() => {
-      const innerModal = modal.querySelector('ion-modal') || modal.querySelector('.import-container');
-      if (innerModal) {
-        innerModal.style.backgroundColor = 'white';
-        innerModal.style.borderRadius = '16px';
-        innerModal.style.maxWidth = '700px';
-        innerModal.style.width = '90%';
-        innerModal.style.maxHeight = '90%';
-        innerModal.style.overflow = 'hidden';
-      }
-    }, 0);
+  onImportModalDismiss(event: any) {
+    this.isImportModalOpen = false;
   }
 
   async exportAccounts() {

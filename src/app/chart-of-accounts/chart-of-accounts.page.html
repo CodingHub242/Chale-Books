@@ -171,4 +171,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Import Modal -->
+  <ion-modal [isOpen]="isImportModalOpen" (didDismiss)="onImportModalDismiss($event)" [backdropDismiss]="true" class="import-modal">
+    <app-import-chart-of-accounts-modal></app-import-chart-of-accounts-modal>
+  </ion-modal>
 </ion-content>

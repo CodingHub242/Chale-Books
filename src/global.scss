@@ -35,3 +35,24 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* Chart of Accounts Import Modal Global Styles */
+.import-modal {
+  --width: 90%;
+  --max-width: 700px;
+  --height: 90%;
+  --max-height: 90%;
+  --border-radius: 16px;
+  --background: rgba(0, 0, 0, 0.5);
+  --backdrop-opacity: 0.5;
+}
+
+.import-modal-wrapper {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
