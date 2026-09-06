@@ -36,6 +36,12 @@ ion-content {
   --padding-bottom: 0;
 }
 
+ion-header {
+  --background: #1a1a2e;
+  --color: white;
+  height: 64px;
+}
+
 ion-toolbar {
   --background: #1a1a2e;
   --color: white;
