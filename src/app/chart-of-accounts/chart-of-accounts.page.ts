@@ -294,13 +294,13 @@ export class ChartOfAccountsPage implements OnInit {
         {
           text: 'Import Chart of Accounts',
           handler: () => {
-            this.presentToast('Import feature coming soon', 'warning');
+            this.openImportModal();
           }
         },
         {
           text: 'Export Chart of Accounts',
           handler: () => {
-            this.presentToast('Export feature coming soon', 'warning');
+            this.exportAccounts();
           }
         },
         {
@@ -311,6 +311,62 @@ export class ChartOfAccountsPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  openImportModal() {
+    const modal = document.createElement('app-import-chart-of-accounts-modal');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.zIndex = '1000';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+
+    const closeHandler = () => {
+      modal.remove();
+      document.removeEventListener('closeImportModal', closeHandler);
+    };
+
+    modal.addEventListener('closeImportModal', closeHandler);
+    document.body.appendChild(modal);
+
+    setTimeout(() => {
+      const innerModal = modal.querySelector('ion-modal') || modal.querySelector('.import-container');
+      if (innerModal) {
+        innerModal.style.backgroundColor = 'white';
+        innerModal.style.borderRadius = '16px';
+        innerModal.style.maxWidth = '700px';
+        innerModal.style.width = '90%';
+        innerModal.style.maxHeight = '90%';
+        innerModal.style.overflow = 'hidden';
+      }
+    }, 0);
+  }
+
+  async exportAccounts() {
+    const loading = await this.presentLoading('Preparing export...');
+    
+    try {
+      const blob = await this.api.exportChartOfAccounts().toPromise();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `chart-of-accounts-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      loading.dismiss();
+      await this.presentToast('Export downloaded successfully!', 'success');
+    } catch (error: any) {
+      loading.dismiss();
+      await this.presentToast('Error exporting accounts: ' + error.message, 'danger');
+    }
   }
 
   async toggleAccountStatus(account: any) {

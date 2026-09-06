@@ -1,13 +1,28 @@
-// Chart of Accounts Page Styling - Matching Zoho Books
+// ============================================
+// CHART OF ACCOUNTS - PROFESSIONAL STYLING
+// ============================================
 
-// Zoho-style Toolbar
-.zoho-toolbar {
+// Reset and base
+.coa-content {
+  --background: #f5f5f5;
+}
+
+ion-content {
+  --background: #f5f5f5;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+// Toolbar Styling
+.coa-toolbar {
   --background: #f5f5f5;
   --min-height: 56px;
   border-bottom: 1px solid #e0e0e0;
   padding: 0 16px;
 
-  .zoho-toolbar-inner {
+  .toolbar-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -21,7 +36,7 @@
       gap: 12px;
       flex-wrap: wrap;
 
-      .zoho-select {
+      .coa-select {
         --background: white;
         --border-radius: 6px;
         min-width: 180px;
@@ -33,7 +48,7 @@
     }
 
     .right-actions {
-      .zoho-searchbar {
+      .coa-searchbar {
         --background: white;
         --border-radius: 6px;
         --padding-start: 12px;
@@ -47,14 +62,14 @@
   }
 }
 
-// Form Container
+// Form Container - Professional Styling
 .form-container {
   padding: 24px;
   max-width: 900px;
   margin: 0 auto;
 
   ion-card {
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e0e0e0;
 
@@ -70,23 +85,29 @@
         border-bottom: 1px solid #eee;
       }
 
-      ion-item {
+      .input-group {
         margin-bottom: 16px;
-        --border-radius: 6px;
-        --background: #fafafa;
-        --padding-start: 16px;
-        --padding-end: 16px;
 
         ion-label {
           font-weight: 500;
           color: #555;
           font-size: 14px;
+          margin-bottom: 8px;
+          display: block;
         }
-      }
 
-      ion-select, ion-input, ion-textarea {
-        --padding-start: 16px;
-        font-size: 14px;
+        ion-input, ion-select, ion-textarea {
+          --background: #fafafa;
+          --border-radius: 6px;
+          --padding-start: 12px;
+          --padding-end: 12px;
+          font-size: 14px;
+          border: 1px solid #e0e0e0;
+        }
+
+        ion-select {
+          min-height: 44px;
+        }
       }
     }
   }
@@ -100,7 +121,7 @@
   margin-top: 24px;
 
   ion-button {
-    --border-radius: 6px;
+    --border-radius: 8px;
     height: 44px;
     font-weight: 500;
     font-size: 14px;
@@ -108,7 +129,7 @@
   }
 }
 
-// Accounts Table Container - Zoho Style
+// Accounts Table Container
 .accounts-container {
   padding: 16px;
   background: #f5f5f5;
@@ -119,8 +140,8 @@
   width: 100%;
   overflow-x: auto;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e0e0e0;
 }
 
@@ -331,8 +352,8 @@
     padding: 12px;
   }
 
-  .zoho-toolbar {
-    .zoho-toolbar-inner {
+  .coa-toolbar {
+    .toolbar-inner {
       flex-direction: column;
       align-items: stretch;
       gap: 8px;
@@ -340,7 +361,7 @@
       .left-actions {
         width: 100%;
 
-        .zoho-select {
+        .coa-select {
           width: 100%;
         }
       }
@@ -348,7 +369,7 @@
       .right-actions {
         width: 100%;
 
-        .zoho-searchbar {
+        .coa-searchbar {
           max-width: 100%;
         }
       }

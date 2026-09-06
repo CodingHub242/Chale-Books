@@ -386,4 +386,21 @@ deleteRevenue(id: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/chart-of-accounts/${id}`, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
+
+  importChartOfAccounts(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers = this.getHeaders();
+    headers = headers.delete('Content-Type');
+    return this.http.post(`${this.baseUrl}/chart-of-accounts/import`, formData, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  exportChartOfAccounts(): Observable<Blob> {
+    const headers = this.getHeaders();
+    return this.http.get(`${this.baseUrl}/chart-of-accounts/export`, {
+      headers,
+      responseType: 'blob'
+    }).pipe(catchError(this.handleError));
+  }
 }
