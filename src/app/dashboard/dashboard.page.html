@@ -218,7 +218,7 @@
             <div class="recent-list" *ngIf="recentExpenses.length > 0">
               <div class="recent-item expense-item" *ngFor="let expense of recentExpenses" routerLink="/expenses">
                 <div class="item-info">
-                  <span class="item-title">{{ expense.category }}</span>
+                  <span class="item-title">{{ expense.category.name }}</span>
                   <span class="item-subtitle">{{ expense.expense_date }} - {{ expense.description }}</span>
                 </div>
                 <div class="expense-amount">{{ expense.amount | currency:defaultCurrency }}</div>
