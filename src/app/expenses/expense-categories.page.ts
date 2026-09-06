@@ -62,7 +62,7 @@ export class ExpenseCategoriesPage implements OnInit {
   }
 
   async loadCategories() {
-    const loading = await this.presentLoading('Loading categories...');
+    const loading = await this.presentLoading('Loading expense accounts...');
     this.api.getExpenseCategories().subscribe({
       next: (response: any) => {
         this.categories = response.data || [];
@@ -70,7 +70,7 @@ export class ExpenseCategoriesPage implements OnInit {
       },
       error: async (error: any) => {
         loading.dismiss();
-        await this.presentToast('Error loading categories: ' + error.message, 'danger');
+        await this.presentToast('Error loading expense accounts: ' + error.message, 'danger');
       }
     });
   }
@@ -128,39 +128,39 @@ export class ExpenseCategoriesPage implements OnInit {
 
   async saveCategory() {
     if (!this.categoryForm.name.trim()) {
-      await this.presentToast('Category name is required', 'warning');
+      await this.presentToast('Expense account name is required', 'warning');
       return;
     }
 
     const loading = await this.presentLoading(
-      this.editingCategory ? 'Updating category...' : 'Creating category...'
+      this.editingCategory ? 'Updating expense account...' : 'Creating expense account...'
     );
 
     if (this.editingCategory) {
       this.api.updateExpenseCategory(this.editingCategory.id, this.categoryForm).subscribe({
         next: async () => {
           loading.dismiss();
-          await this.presentToast('Category updated successfully!', 'success');
+          await this.presentToast('Expense account updated successfully!', 'success');
           this.loadCategories();
           this.cancelEdit();
         },
         error: async (error: any) => {
           loading.dismiss();
-          await this.presentToast('Error updating category: ' + error.message, 'danger');
+          await this.presentToast('Error updating expense account: ' + error.message, 'danger');
         }
       });
     } else {
       this.api.createExpenseCategory(this.categoryForm).subscribe({
         next: async () => {
           loading.dismiss();
-          await this.presentToast('Category created successfully!', 'success');
+          await this.presentToast('Expense account created successfully!', 'success');
           this.loadCategories();
           this.resetForm();
           this.isAdding = false;
         },
         error: async (error: any) => {
           loading.dismiss();
-          await this.presentToast('Error creating category: ' + error.message, 'danger');
+          await this.presentToast('Error creating expense account: ' + error.message, 'danger');
         }
       });
     }
@@ -169,7 +169,7 @@ export class ExpenseCategoriesPage implements OnInit {
   async deleteCategory(category: any) {
     const alert = await this.alertController.create({
       header: 'Confirm Delete',
-      message: `Are you sure you want to delete the category "${category.name}"? This will not delete associated expenses.`,
+      message: `Are you sure you want to delete the expense account "${category.name}"? This will not delete associated expenses.`,
       buttons: [
         {
           text: 'Cancel',
@@ -179,16 +179,16 @@ export class ExpenseCategoriesPage implements OnInit {
           text: 'Delete',
           role: 'destructive',
           handler: async () => {
-            const loading = await this.presentLoading('Deleting category...');
+            const loading = await this.presentLoading('Deleting expense account...');
             this.api.deleteExpenseCategory(category.id).subscribe({
               next: async () => {
                 loading.dismiss();
-                await this.presentToast('Category deleted successfully!', 'success');
+                await this.presentToast('Expense account deleted successfully!', 'success');
                 this.loadCategories();
               },
               error: async (error: any) => {
                 loading.dismiss();
-                let errorMessage = 'Error deleting category';
+                let errorMessage = 'Error deleting expense account';
                 if (error.error && error.error.message) {
                   errorMessage = error.error.message;
                 }

@@ -15,7 +15,30 @@ ion-card-content {
 }
 
 ion-item {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  border-radius: 12px;
+  --background: #f5f5f5;
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: #e0e0e0;
+  min-height: 56px;
+
+  ion-label {
+    font-weight: 500;
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  ion-input {
+    --padding-start: 0;
+    --padding-end: 0;
+    font-size: 15px;
+    color: #333;
+  }
 }
 
 .color-options {

@@ -224,7 +224,7 @@
         <form [formGroup]="expenseForm" (ngSubmit)="editingExpense ? updateExpense() : submitExpense()">
           <!-- Category -->
           <ion-item>
-            <ion-label position="floating">Category *</ion-label>
+            <ion-label position="floating">Expense Account *</ion-label>
             <ion-select formControlName="category" placeholder="Select category" (ionChange)="onCategoryChange($event)">
               <ion-select-option *ngFor="let category of expenseCategories" [value]="category.id">
                 {{ category.name }}
