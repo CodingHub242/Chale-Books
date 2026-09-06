@@ -14,6 +14,17 @@ ion-card-content {
   }
 }
 
+ion-header {
+  --background: #1a1a2e;
+  --color: white;
+  box-shadow: none;
+}
+
+ion-toolbar {
+  --background: #1a1a2e;
+  --color: white;
+}
+
 ion-item {
   margin-bottom: 16px;
   --padding-start: 16px;
