@@ -10,7 +10,7 @@
       <ion-button (click)="openImportModal()" title="Import Expenses">
         <ion-icon name="cloud-upload" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-button (click)="openCategories()" title="Manage Categories">
+      <ion-button (click)="openCategories()" title="Manage Expense Accounts">
         <ion-icon name="folder" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="isAdding = true">
@@ -107,7 +107,7 @@
               </ion-checkbox>
             </th>
             <th (click)="sortBy('category')" class="sortable">
-              Category
+              Expense Account
               <ion-icon *ngIf="sortField === 'category'" [name]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></ion-icon>
             </th>
             <th>Description</th>
