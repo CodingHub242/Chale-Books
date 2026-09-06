@@ -26,6 +26,10 @@
 // Reset and base
 ion-content {
   --background: var(--bg-primary);
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
 }
 
 ion-toolbar {
@@ -68,25 +72,28 @@ ion-title {
   display: flex;
   min-height: 100vh;
   position: relative;
+  background: var(--bg-primary);
 }
 
 // Desktop Sidebar
 .desktop-sidebar {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
   width: var(--sidebar-width);
-  height: 100vh;
-  background: var(--primary-color);
+  min-height: 100vh;
+  background-color: var(--primary-color) !important;
+  background: var(--primary-color) !important;
   color: white;
   display: flex;
   flex-direction: column;
   z-index: 100;
   box-shadow: var(--shadow-lg);
   transition: transform 0.3s ease;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 
   &.mobile-hidden {
-    display: none;
+    display: none !important;
   }
 }
 
