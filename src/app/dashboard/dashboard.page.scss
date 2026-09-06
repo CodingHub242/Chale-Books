@@ -89,10 +89,10 @@ ion-title {
 // Desktop Sidebar
 .desktop-sidebar {
   position: fixed;
-  top: 20px;
+  top: 5px;
   left: 0;
   width: var(--sidebar-width, 260px);
-  height: calc(100vh - 64px);
+  height: calc(100vh - 5px);
   background-color: #1a1a2e !important;
   background: #1a1a2e !important;
   color: white;
