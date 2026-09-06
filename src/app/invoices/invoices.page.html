@@ -359,6 +359,41 @@
             <ion-textarea formControlName="terms_and_conditions" rows="4" placeholder="Enter terms and conditions"></ion-textarea>
           </ion-item>
 
+          <!-- Custom Fields -->
+          <div class="custom-fields-section">
+            <div class="section-header">
+              <h3>Custom Fields</h3>
+              <ion-button fill="outline" size="small" (click)="addCustomField()">
+                <ion-icon name="add" slot="start"></ion-icon>
+                Add Field
+              </ion-button>
+            </div>
+            
+            <div *ngFor="let field of customFields; let i = index" class="custom-field-row">
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="12" size-md="5">
+                    <ion-item>
+                      <ion-label position="floating">Label</ion-label>
+                      <ion-input [(ngModel)]="field.label" placeholder="Field label"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="12" size-md="6">
+                    <ion-item>
+                      <ion-label position="floating">Value</ion-label>
+                      <ion-input [(ngModel)]="field.value" placeholder="Field value"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="12" size-md="1">
+                    <ion-button fill="clear" color="danger" (click)="removeCustomField(i)" *ngIf="customFields.length > 1">
+                      <ion-icon name="trash" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+          </div>
+
           <!-- Form Actions -->
           <div class="form-actions">
             <ion-button expand="block" type="submit" [disabled]="!invoiceForm.valid">

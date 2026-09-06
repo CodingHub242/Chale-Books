@@ -37,6 +37,7 @@ export class InvoicesPage implements OnInit {
   isAdding = false;
   editingInvoice: any = null;
   searchTerm = '';
+  customFields: any[] = [{ label: '', value: '' }];
   
   // Selection and bulk actions
   selectedInvoices: any[] = [];
@@ -286,13 +287,16 @@ export class InvoicesPage implements OnInit {
     if (this.invoiceForm.valid) {
       const loading = await this.presentLoading('Creating invoice...');
       
-      this.api.createInvoice(this.invoiceForm.value).subscribe({
+      const formData = { ...this.invoiceForm.value, custom_fields: this.customFields.filter(f => f.label && f.value) };
+      
+      this.api.createInvoice(formData).subscribe({
         next: async () => {
           loading.dismiss();
           await this.presentToast('Invoice created successfully!', 'success');
           this.loadInvoices();
           this.invoiceForm.reset();
           this.initForm();
+          this.customFields = [{ label: '', value: '' }];
           this.isAdding = false;
         },
         error: async (error: any) => {
@@ -319,6 +323,10 @@ export class InvoicesPage implements OnInit {
       trip_show: invoice.trip_show || '',
       trip_show_details: invoice.trip_show_details || ''
     });
+
+    this.customFields = invoice.custom_fields && invoice.custom_fields.length > 0 
+      ? invoice.custom_fields 
+      : [{ label: '', value: '' }];
 
     while (this.items.length) {
       this.items.removeAt(0);
@@ -358,7 +366,9 @@ export class InvoicesPage implements OnInit {
     if (this.invoiceForm.valid && this.editingInvoice) {
       const loading = await this.presentLoading('Updating invoice...');
       
-      this.api.updateInvoice(this.editingInvoice.id, this.invoiceForm.value).subscribe({
+      const formData = { ...this.invoiceForm.value, custom_fields: this.customFields.filter(f => f.label && f.value) };
+      
+      this.api.updateInvoice(this.editingInvoice.id, formData).subscribe({
         next: async () => {
           loading.dismiss();
           await this.presentToast('Invoice updated successfully!', 'success');
@@ -370,6 +380,16 @@ export class InvoicesPage implements OnInit {
           await this.presentToast('Error updating invoice: ' + error.message, 'danger');
         }
       });
+    }
+  }
+
+  addCustomField() {
+    this.customFields.push({ label: '', value: '' });
+  }
+
+  removeCustomField(index: number) {
+    if (this.customFields.length > 1) {
+      this.customFields.splice(index, 1);
     }
   }
 
