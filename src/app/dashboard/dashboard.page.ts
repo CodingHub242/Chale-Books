@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
-  IonContent, IonButtons, IonLabel, IonHeader, IonTitle, IonToolbar, IonCard,
+  IonContent, IonButtons, IonTitle, IonToolbar, IonCard,
   IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonMenuButton, IonMenu,
-  IonList, IonItem,IonAvatar, IonIcon, IonGrid, IonRow, IonCol, IonBadge
+  IonList, IonItem, IonAvatar, IonIcon, IonGrid, IonRow, IonCol, IonBadge
 } from '@ionic/angular/standalone';
-import { MenuController } from '@ionic/angular';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
@@ -18,6 +17,7 @@ import {
   documentText,
   peopleOutline,
   list,
+  book
 } from 'ionicons/icons';
 
 @Component({
@@ -26,33 +26,30 @@ import {
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
   imports: [
-    IonContent, IonLabel, IonButtons, IonHeader, IonTitle, IonToolbar, CommonModule,
+    IonContent, IonTitle, IonButtons, IonToolbar, CommonModule,
     RouterModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton,
-    IonMenuButton, IonMenu,IonAvatar,IonMenuButton, IonList, IonItem, IonIcon, IonGrid, IonRow, IonCol,
+    IonMenuButton, IonMenu, IonAvatar, IonList, IonItem, IonIcon, IonGrid, IonRow, IonCol,
     IonBadge
   ]
 })
 export class DashboardPage implements OnInit {
   user: any = {};
+  isMobile = false;
 
-  // Default currency for display
-  defaultCurrency = 'GHS'; // Change this to your desired currency code, e.g., 'EUR', 'GBP', etc.
+  defaultCurrency = 'GHS';
 
-  // Stats
   totalRevenue = 0;
   totalExpenses = 0;
   netProfit = 0;
   pendingQuotes = 0;
   unpaidInvoices = 0;
   overdueInvoices = 0;
-  
-  // Recent data
+
   recentInvoices: any[] = [];
   recentQuotes: any[] = [];
   recentExpenses: any[] = [];
-  
-  // Loading state
-  isLoading = true;
+
+  currentDate = new Date();
 
   constructor(
     private api: Api,
@@ -62,7 +59,7 @@ export class DashboardPage implements OnInit {
   ) {
     addIcons({ 
       home, people, document, cash, clipboard, logOut, trendingUp, trendingDown,
-      alertCircle, timeOutline, walletOutline, barChart,cube,documentText,peopleOutline,list,
+      alertCircle, timeOutline, walletOutline, barChart, cube, documentText, peopleOutline, list, book,
     });
   }
 
@@ -71,22 +68,28 @@ export class DashboardPage implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    this.checkScreenSize();
     this.loadDashboardData();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth < 800;
   }
 
   async loadDashboardData() {
     this.isLoading = true;
-    
-    // Load user
+
     this.user = this.auth.getUser();
 
-    // Load invoices and revenues
     this.api.getInvoices().subscribe((response: any) => {
-      //console.log('Response:', response);
       const invoices = response.invoices || response;
       const revenues = response.revenues || [];
 
-      // Calculate revenue from paid invoices
       const paidInvoiceRevenue = invoices
         .filter((inv: any) => inv.status === 'paid')
         .reduce((sum: number, inv: any) => sum + parseFloat(inv.total || inv.amount || 0), 0);
@@ -94,31 +97,22 @@ export class DashboardPage implements OnInit {
       this.unpaidInvoices = invoices.filter((inv: any) => inv.status === 'unpaid').length;
       this.overdueInvoices = invoices.filter((inv: any) => inv.status === 'overdue').length;
 
-      // Get recent invoices (last 5)
       this.recentInvoices = invoices.slice(0, 5);
 
-      // Calculate revenue from manual revenue entries
       const revenueAmount = revenues.reduce((sum: number, rev: any) => sum + parseFloat(rev.amount || 0), 0);
       this.totalRevenue = paidInvoiceRevenue + revenueAmount;
       this.calculateNetProfit();
     });
 
-    // Load expenses
     this.api.getExpenses().subscribe((expenses: any) => {
       this.totalExpenses = expenses.reduce((sum: number, exp: any) => sum + parseFloat(exp.amount || 0), 0);
-      
-      // Get recent expenses (last 5)
       this.recentExpenses = expenses.slice(0, 5);
-      
       this.calculateNetProfit();
       this.isLoading = false;
     });
 
-    // Load quotes
     this.api.getQuotes().subscribe((quotes: any) => {
       this.pendingQuotes = quotes.filter((q: any) => q.status === 'draft' || q.status === 'sent').length;
-      
-      // Get recent quotes (last 5)
       this.recentQuotes = quotes.slice(0, 5);
     });
   }
