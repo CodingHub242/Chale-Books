@@ -326,26 +326,26 @@ ion-modal ion-content {
 }
 
 // Header styling
-ion-header {
-  ion-toolbar {
-    --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
-    --color: white;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
-  }
+// ion-header {
+//   ion-toolbar {
+//     --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+//     --color: white;
+//     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+//   }
 
-  ion-title {
-    font-weight: 700;
-    font-size: 1.4rem;
-  }
+//   ion-title {
+//     font-weight: 700;
+//     font-size: 1.4rem;
+//   }
 
-  ion-button {
-    --color: white;
+//   ion-button {
+//     --color: white;
 
-    &:hover {
-      --background: rgba(255, 255, 255, 0.1);
-    }
-  }
-}
+//     &:hover {
+//       --background: rgba(255, 255, 255, 0.1);
+//     }
+//   }
+// }
 
 // Responsive design
 @media (max-width: 992px) {
