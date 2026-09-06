@@ -1,8 +1,8 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
-  IonContent, IonButtons, IonTitle, IonToolbar, IonCard,
+  IonHeader, IonContent, IonButtons, IonTitle, IonToolbar, IonCard,
   IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonMenuButton, IonMenu,
   IonList, IonItem, IonAvatar, IonIcon, IonGrid, IonRow, IonCol, IonBadge
 } from '@ionic/angular/standalone';
@@ -26,8 +26,9 @@ import {
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
-    IonContent, IonTitle, IonButtons, IonToolbar, CommonModule,
+    IonHeader, IonContent, IonTitle, IonButtons, IonToolbar, CommonModule,
     RouterModule, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton,
     IonMenuButton, IonMenu, IonAvatar, IonList, IonItem, IonIcon, IonGrid, IonRow, IonCol,
     IonBadge
