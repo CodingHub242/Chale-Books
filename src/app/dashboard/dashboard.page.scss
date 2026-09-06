@@ -2,8 +2,12 @@
 // PROFESSIONAL DASHBOARD STYLING
 // ============================================
 
-// CSS Variables for consistent theming
-:root {
+// Dashboard Layout
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  background: #f7fafc;
   --sidebar-width: 260px;
   --primary-color: #1a1a2e;
   --primary-light: #16213e;
@@ -25,7 +29,7 @@
 
 // Reset and base
 ion-content {
-  --background: var(--bg-primary);
+  --background: #f7fafc;
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: 0;
@@ -33,7 +37,7 @@ ion-content {
 }
 
 ion-toolbar {
-  --background: var(--primary-color);
+  --background: #1a1a2e;
   --color: white;
   height: 64px;
 }
@@ -210,7 +214,7 @@ ion-title {
 // Main Content
 .main-content {
   flex: 1;
-  margin-left: var(--sidebar-width);
+  padding-top: 15px;
   min-height: 100vh;
   background: var(--bg-primary);
 }
