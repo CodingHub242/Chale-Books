@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://chalebooks.codepps.online/api'
+  apiUrl: 'https://boltesolutions.net/books/public/api',
+  wsUrl: 'wss://boltesolutions.net'
 };
 
 /*
