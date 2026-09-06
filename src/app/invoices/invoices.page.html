@@ -179,6 +179,11 @@
         <h2>{{ editingInvoice ? 'Edit Invoice' : 'New Invoice' }}</h2>
         
         <form [formGroup]="invoiceForm" (ngSubmit)="editingInvoice ? updateInvoice() : submitInvoice()">
+          <!---Get Generated Invoice ID from generateInvoiceNumber()-->
+          <ion-item>
+            <ion-label position="floating">Invoice Number *</ion-label>
+            <ion-input type="text" formControlName="invoice_number"></ion-input>
+          </ion-item> 
           <!-- Client Selection -->
           <ion-item>
             <ion-label position="floating">Client *</ion-label>
@@ -203,6 +208,23 @@
           <ion-item>
             <ion-label position="floating">Due Date *</ion-label>
             <ion-input type="date" formControlName="due_date"></ion-input>
+          </ion-item>
+
+          <!--Add dropdown for trip and show and if any selected presented a text input for details(if show,Show Name - if trip, details)-->
+          <ion-item>
+            <ion-label position="floating">Trip/Show</ion-label>
+            <ion-select formControlName="trip_show" placeholder="Select trip or show" (ionChange)="onTripShowChange()">
+              <ion-select-option value="trip">Trip</ion-select-option>
+              <ion-select-option value="show">Show</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item *ngIf="invoiceForm.get('trip_show')?.value === 'show'">
+            <ion-label position="floating">Show Name</ion-label>
+            <ion-input type="text" formControlName="trip_show_details" placeholder="Enter show name"></ion-input>
+          </ion-item>
+          <ion-item *ngIf="invoiceForm.get('trip_show')?.value === 'trip'">
+            <ion-label position="floating">Trip Details</ion-label>
+            <ion-input type="text" formControlName="trip_show_details" placeholder="Enter trip details"></ion-input>
           </ion-item>
 
           <!-- Status -->

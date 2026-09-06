@@ -82,11 +82,14 @@ export class InvoicesPage implements OnInit {
 
   initForm() {
     this.invoiceForm = this.fb.group({
+      invoice_number: [this.generateInvoiceNumber()],
       client_id: ['', Validators.required],
       currency_id: ['', Validators.required],
       due_date: ['', Validators.required],
       status: ['draft'],
       notes: [''],
+      trip_show: [''],
+      trip_show_details: [''],
       items: this.fb.array([this.createItem()])
     });
 
@@ -113,6 +116,16 @@ export class InvoicesPage implements OnInit {
   get items(): FormArray {
     return this.invoiceForm.get('items') as FormArray;
   }
+
+  //generate invoice number
+  generateInvoiceNumber() {
+    const timestamp = Date.now();
+    return 'INV-' + timestamp;
+  }
+
+  //trip/show dropdown has been added to invoice form so when each selected enable the trip_show_details formcontrol for user to type details
+  
+
 
   addItem() {
     this.items.push(this.createItem());
@@ -222,11 +235,14 @@ export class InvoicesPage implements OnInit {
     this.editingInvoice = invoice;
     
     this.invoiceForm.patchValue({
+      invoice_number: invoice.invoice_number || '',
       client_id: invoice.client_id,
       currency_id: invoice.currency_id,
       due_date: invoice.due_date,
       status: invoice.status,
-      notes: invoice.notes
+      notes: invoice.notes,
+      trip_show: invoice.trip_show || '',
+      trip_show_details: invoice.trip_show_details || ''
     });
 
     while (this.items.length) {
@@ -245,6 +261,13 @@ export class InvoicesPage implements OnInit {
       });
     } else {
       this.items.push(this.createItem());
+    }
+  }
+
+  onTripShowChange() {
+    const tripShow = this.invoiceForm.get('trip_show')?.value;
+    if (!tripShow) {
+      this.invoiceForm.patchValue({ trip_show_details: '' });
     }
   }
 
