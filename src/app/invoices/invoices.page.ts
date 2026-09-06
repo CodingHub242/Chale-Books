@@ -208,6 +208,79 @@ export class InvoicesPage implements OnInit {
     });
   }
 
+  async openAddClientAlert() {
+    const alert = await this.alertController.create({
+      header: 'Add New Client',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Client name *',
+          attributes: {
+            required: true
+          }
+        },
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'Email *',
+          attributes: {
+            required: true
+          }
+        },
+        {
+          name: 'phone',
+          type: 'text',
+          placeholder: 'Phone'
+        },
+        {
+          name: 'address',
+          type: 'text',
+          placeholder: 'Address'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Add Client',
+          handler: async (data: any) => {
+            if (!data.name || !data.email) {
+              await this.presentToast('Name and email are required', 'warning');
+              return false;
+            }
+
+            const loading = await this.presentLoading('Creating client...');
+            
+            this.api.createClient({
+              name: data.name,
+              email: data.email,
+              phone: data.phone || '',
+              address: data.address || ''
+            }).subscribe({
+              next: async (newClient: any) => {
+                loading.dismiss();
+                await this.presentToast('Client added successfully!', 'success');
+                this.clients.push(newClient);
+                this.invoiceForm.patchValue({ client_id: newClient.id });
+              },
+              error: async (error: any) => {
+                loading.dismiss();
+                await this.presentToast('Error creating client: ' + error.message, 'danger');
+              }
+            });
+
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
   async submitInvoice() {
     if (this.invoiceForm.valid) {
       const loading = await this.presentLoading('Creating invoice...');
@@ -268,6 +341,14 @@ export class InvoicesPage implements OnInit {
     const tripShow = this.invoiceForm.get('trip_show')?.value;
     if (!tripShow) {
       this.invoiceForm.patchValue({ trip_show_details: '' });
+    }
+  }
+
+  async onClientChange(event: any) {
+    const clientId = event.detail.value;
+    if (clientId === '__add_client__') {
+      this.invoiceForm.patchValue({ client_id: '' });
+      await this.openAddClientAlert();
     }
   }
 

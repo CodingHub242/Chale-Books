@@ -187,9 +187,12 @@
           <!-- Client Selection -->
           <ion-item>
             <ion-label position="floating">Client *</ion-label>
-            <ion-select formControlName="client_id" placeholder="Select client">
+            <ion-select formControlName="client_id" placeholder="Select client" (ionChange)="onClientChange($event)">
               <ion-select-option *ngFor="let client of clients" [value]="client.id">
                 {{ client.name }}
+              </ion-select-option>
+              <ion-select-option value="__add_client__">
+                + Add New Client
               </ion-select-option>
             </ion-select>
           </ion-item>

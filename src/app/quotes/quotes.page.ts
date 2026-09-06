@@ -270,9 +270,92 @@ export class QuotesPage implements OnInit {
       next: (data: any) => {
         this.availableItems = data;
       },
-      error: async (error) => {
+      error: async (error: any) => {
         await this.presentToast('Error loading items: ' + error.message, 'danger');
       }
+    });
+  }
+
+  async openAddClientAlert() {
+    const alert = await this.alertController.create({
+      header: 'Add New Client',
+      inputs: [
+        {
+          name: 'name',
+          type: 'text',
+          placeholder: 'Client name *',
+          attributes: {
+            required: true
+          }
+        },
+        {
+          name: 'email',
+          type: 'email',
+          placeholder: 'Email *',
+          attributes: {
+            required: true
+          }
+        },
+        {
+          name: 'phone',
+          type: 'text',
+          placeholder: 'Phone'
+        },
+        {
+          name: 'address',
+          type: 'text',
+          placeholder: 'Address'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Add Client',
+          handler: async (data: any) => {
+            if (!data.name || !data.email) {
+              await this.presentToast('Name and email are required', 'warning');
+              return false;
+            }
+
+            const loading = await this.presentLoading('Creating client...');
+            
+            this.api.createClient({
+              name: data.name,
+              email: data.email,
+              phone: data.phone || '',
+              address: data.address || ''
+            }).subscribe({
+              next: async (newClient: any) => {
+                loading.dismiss();
+                await this.presentToast('Client added successfully!', 'success');
+                this.clients.push(newClient);
+                this.quoteForm.patchValue({ client_id: newClient.id });
+              },
+              error: async (error: any) => {
+                loading.dismiss();
+                await this.presentToast('Error creating client: ' + error.message, 'danger');
+              }
+            });
+
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  async onClientChange(event: any) {
+    const clientId = event.detail.value;
+    if (clientId === '__add_client__') {
+      this.quoteForm.patchValue({ client_id: '' });
+      await this.openAddClientAlert();
+    }
+  }
     });
   }
 
