@@ -39,13 +39,13 @@ ion-content {
 ion-header {
   --background: #1a1a2e;
   --color: white;
-  height: 64px;
+  height: 40px;
 }
 
 ion-toolbar {
   --background: #1a1a2e;
   --color: white;
-  height: 64px;
+  height: 40px;
 }
 
 ion-title {
@@ -88,7 +88,7 @@ ion-title {
 // Desktop Sidebar
 .desktop-sidebar {
   position: fixed;
-  top: 64px;
+  top: 40px;
   left: 0;
   width: var(--sidebar-width, 260px);
   height: calc(100vh - 64px);
