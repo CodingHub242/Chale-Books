@@ -40,6 +40,7 @@ export class QuotesPage implements OnInit {
   isAdding = false;
   editingQuote: any = null;
   searchTerm = '';
+  customFields: any[] = [{ label: '', value: '' }];
 
   // Pagination properties
   currentPage = 1;
@@ -361,13 +362,16 @@ export class QuotesPage implements OnInit {
     if (this.quoteForm.valid) {
       const loading = await this.presentLoading('Creating quote...');
 
-      this.api.createQuote(this.quoteForm.value).subscribe({
+      const formData = { ...this.quoteForm.value, custom_fields: this.customFields.filter(f => f.label && f.value) };
+      
+      this.api.createQuote(formData).subscribe({
         next: async () => {
           loading.dismiss();
           await this.presentToast('Quote created successfully!', 'success');
           this.loadQuotes();
           this.quoteForm.reset();
           this.initForm();
+          this.customFields = [{ label: '', value: '' }];
           this.isAdding = false;
         },
         error: async (error) => {
@@ -396,6 +400,10 @@ export class QuotesPage implements OnInit {
       notes: quote.notes
     });
 
+    this.customFields = quote.custom_fields && quote.custom_fields.length > 0 
+      ? quote.custom_fields 
+      : [{ label: '', value: '' }];
+
     while (this.items.length) {
       this.items.removeAt(0);
     }
@@ -419,7 +427,9 @@ export class QuotesPage implements OnInit {
     if (this.quoteForm.valid && this.editingQuote) {
       const loading = await this.presentLoading('Updating quote...');
 
-      this.api.updateQuote(this.editingQuote.id, this.quoteForm.value).subscribe({
+      const formData = { ...this.quoteForm.value, custom_fields: this.customFields.filter(f => f.label && f.value) };
+
+      this.api.updateQuote(this.editingQuote.id, formData).subscribe({
         next: async () => {
           loading.dismiss();
           await this.presentToast('Quote updated successfully!', 'success');
@@ -431,6 +441,16 @@ export class QuotesPage implements OnInit {
           await this.presentToast('Error updating quote: ' + error.message, 'danger');
         }
       });
+    }
+  }
+
+  addCustomField() {
+    this.customFields.push({ label: '', value: '' });
+  }
+
+  removeCustomField(index: number) {
+    if (this.customFields.length > 1) {
+      this.customFields.splice(index, 1);
     }
   }
 

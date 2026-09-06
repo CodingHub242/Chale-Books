@@ -36,6 +36,20 @@
         </div>
       </div>
 
+      <!-- Custom Fields Section -->
+      <div *ngIf="quote.custom_fields && quote.custom_fields.length > 0" class="custom-fields-section">
+        <div class="terms-header">
+          <ion-icon name="list"></ion-icon>
+          <h3>Additional Information</h3>
+        </div>
+        <div class="custom-fields-grid">
+          <div class="custom-field-row" *ngFor="let field of quote.custom_fields">
+            <div class="custom-field-label" *ngIf="field.label">{{ field.label }}:</div>
+            <div class="custom-field-value" *ngIf="field.value">{{ field.value }}</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Email Composition Section -->
       <!-- <div class="email-section">
         <div class="email-header">
