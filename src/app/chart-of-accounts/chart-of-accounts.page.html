@@ -1,0 +1,172 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Chart of Accounts</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openMoreActions()">
+        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar class="zoho-toolbar">
+    <div class="zoho-toolbar-inner">
+      <div class="left-actions">
+        <ion-select [(ngModel)]="activeFilter" placeholder="Active Accounts" class="zoho-select" (ionChange)="onActiveFilterChange()" interface="popover">
+          <ion-select-option value="active">Active Accounts</ion-select-option>
+          <ion-select-option value="inactive">Inactive Accounts</ion-select-option>
+          <ion-select-option value="all">All Accounts</ion-select-option>
+        </ion-select>
+        <ion-button fill="outline" size="small" (click)="toggleAdd()" *ngIf="!isAdding && !editingAccount">
+          <ion-icon name="add" slot="start"></ion-icon>
+          New Account
+        </ion-button>
+      </div>
+      <div class="right-actions">
+        <ion-searchbar [(ngModel)]="searchTerm" placeholder="Find Accountant" animated class="zoho-searchbar" (ionInput)="onSearch($event)"></ion-searchbar>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Add/Edit Account Form -->
+  <div *ngIf="isAdding || editingAccount" class="form-container">
+    <ion-card>
+      <ion-card-content>
+        <h2>{{ editingAccount ? 'Edit Account' : 'New Account' }}</h2>
+        
+        <form (ngSubmit)="saveAccount()">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <ion-item>
+                  <ion-label position="floating">Account Name *</ion-label>
+                  <ion-input [(ngModel)]="accountForm.name" name="name" placeholder="Enter account name"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12" size-md="6">
+                <ion-item>
+                  <ion-label position="floating">Account Code</ion-label>
+                  <ion-input [(ngModel)]="accountForm.code" name="code" placeholder="e.g. 1000"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <ion-item>
+                  <ion-label position="floating">Account Type *</ion-label>
+                  <ion-select [(ngModel)]="accountForm.type" name="type" placeholder="Select type">
+                    <ion-select-option *ngFor="let option of typeOptions" [value]="option.value">
+                      {{ option.label }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12" size-md="6">
+                <ion-item>
+                  <ion-label position="floating">Subtype</ion-label>
+                  <ion-select [(ngModel)]="accountForm.subtype" name="subtype" placeholder="Select subtype">
+                    <ion-select-option *ngFor="let option of getSubtypeOptions()" [value]="option.value">
+                      {{ option.label }}
+                    </ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col size="12">
+                <ion-item>
+                  <ion-label position="floating">Description</ion-label>
+                  <ion-textarea [(ngModel)]="accountForm.description" name="description" rows="2" placeholder="Enter description"></ion-textarea>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <div class="form-actions">
+            <ion-button expand="block" type="submit">
+              {{ editingAccount ? 'Update' : 'Create' }}
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="editingAccount ? cancelEdit() : toggleAdd()">
+              Cancel
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Accounts Table -->
+  <div *ngIf="!isAdding && !editingAccount" class="accounts-container">
+    <div class="table-wrapper">
+      <table class="accounts-table">
+        <thead>
+          <tr>
+            <th style="width: 40px;">
+              <ion-checkbox [(ngModel)]="selectAll" (ionChange)="toggleSelectAll()"></ion-checkbox>
+            </th>
+            <th>Account Name</th>
+            <th>Account Code</th>
+            <th>Account Type</th>
+            <th>Documents</th>
+            <th>Parent Account Name</th>
+            <th style="width: 60px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let account of filteredAccounts" [class.inactive-row]="!account.is_active">
+            <td class="checkbox-column">
+              <ion-checkbox [(ngModel)]="account.selected" (ionChange)="onSelectChange()"></ion-checkbox>
+            </td>
+            <td class="name-column">
+              <div class="account-info">
+                <span class="account-name">{{ account.name }}</span>
+              </div>
+            </td>
+            <td class="code-column">
+              <span class="account-code">{{ account.code || '-' }}</span>
+            </td>
+            <td class="type-column">
+              <ion-select [(ngModel)]="account.type" (ionChange)="updateAccountType(account)" interface="popover" [disabled]="!account.is_active" class="type-select">
+                <ion-select-option *ngFor="let option of typeOptions" [value]="option.value">
+                  {{ option.label }}
+                </ion-select-option>
+              </ion-select>
+            </td>
+            <td class="documents-column">
+              <span class="documents-count">{{ account.documents_count || 0 }}</span>
+            </td>
+            <td class="parent-column">
+              <span class="parent-name">{{ account.parent?.name || '-' }}</span>
+            </td>
+            <td class="actions-column">
+              <ion-button fill="clear" size="small" (click)="openAccountActions(account)">
+                <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+              </ion-button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredAccounts.length === 0">
+            <td colspan="7" class="empty-row">
+              <div class="empty-state">
+                <ion-icon name="list-outline" class="empty-icon"></ion-icon>
+                <h2>No accounts found</h2>
+                <p>Create your first account to get started</p>
+                <ion-button (click)="toggleAdd()">
+                  <ion-icon name="add" slot="start"></ion-icon>
+                  Create Account
+                </ion-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ion-content>

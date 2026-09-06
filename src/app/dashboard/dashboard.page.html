@@ -6,13 +6,13 @@
   </ion-header>
   <ion-content>
     <!-- User Profile Section -->
-    <div class="user-profile">
+    <!-- <div class="user-profile">
       <ion-avatar>
         <div class="avatar-placeholder">{{ user?.name?.charAt(0) || 'U' }}</div>
       </ion-avatar>
       <h3>{{ user?.name }}</h3>
       <p>{{ user?.email }}</p>
-    </div>
+    </div> -->
 
     <!-- Navigation Menu -->
     <ion-list>
@@ -43,6 +43,10 @@
       <ion-item button routerLink="/expenses" routerLinkActive="active" detail="false">
         <ion-icon name="cash" slot="start"></ion-icon>
         <ion-label>Expenses</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/chart-of-accounts" routerLinkActive="active" detail="false">
+        <ion-icon name="list" slot="start"></ion-icon>
+        <ion-label>Chart of Accounts</ion-label>
       </ion-item>
       <ion-item button routerLink="/reports" routerLinkActive="active" detail="false">
         <ion-icon name="bar-chart" slot="start"></ion-icon>
@@ -116,6 +120,10 @@
       <ion-item button routerLink="/expenses" routerLinkActive="active" detail="false">
         <ion-icon name="cash" slot="start"></ion-icon>
         <ion-label>Expenses</ion-label>
+      </ion-item>
+      <ion-item button routerLink="/chart-of-accounts" routerLinkActive="active" detail="false">
+        <ion-icon name="list" slot="start"></ion-icon>
+        <ion-label>Chart of Accounts</ion-label>
       </ion-item>
       <ion-item button routerLink="/reports" routerLinkActive="active" detail="false">
         <ion-icon name="bar-chart" slot="start"></ion-icon>

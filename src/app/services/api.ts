@@ -336,24 +336,54 @@ deleteRevenue(id: number): Observable<any> {
     .pipe(catchError(this.handleError));
 }
 
-// Quote Templates
-getQuoteTemplates(): Observable<any> {
-  return this.http.get(`${this.baseUrl}/quote-templates`, { headers: this.getHeaders() })
-    .pipe(catchError(this.handleError));
-}
+  // Quote Templates
+  getQuoteTemplates(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/quote-templates`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
 
-createQuoteTemplate(data: any): Observable<any> {
-  return this.http.post(`${this.baseUrl}/quote-templates`, data, { headers: this.getHeaders() })
-    .pipe(catchError(this.handleError));
-}
+  createQuoteTemplate(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/quote-templates`, data, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
 
-updateQuoteTemplate(id: number, data: any): Observable<any> {
-  return this.http.put(`${this.baseUrl}/quote-templates/${id}`, data, { headers: this.getHeaders() })
-    .pipe(catchError(this.handleError));
-}
+  updateQuoteTemplate(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/quote-templates/${id}`, data, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
 
-deleteQuoteTemplate(id: number): Observable<any> {
-  return this.http.delete(`${this.baseUrl}/quote-templates/${id}`, { headers: this.getHeaders() })
-    .pipe(catchError(this.handleError));
-}
+  deleteQuoteTemplate(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/quote-templates/${id}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Chart of Accounts
+  getChartOfAccounts(type?: string): Observable<any> {
+    let params = '';
+    if (type) {
+      params = `?type=${encodeURIComponent(type)}`;
+    }
+    return this.http.get(`${this.baseUrl}/chart-of-accounts${params}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  createChartOfAccount(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/chart-of-accounts`, data, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  updateChartOfAccount(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/chart-of-accounts/${id}`, data, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  toggleChartOfAccountActive(id: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/chart-of-accounts/${id}/toggle-active`, {}, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteChartOfAccount(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/chart-of-accounts/${id}`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
 }

@@ -17,6 +17,7 @@ import {
   cube,
   documentText,
   peopleOutline,
+  list,
 } from 'ionicons/icons';
 
 @Component({
@@ -61,7 +62,7 @@ export class DashboardPage implements OnInit {
   ) {
     addIcons({ 
       home, people, document, cash, clipboard, logOut, trendingUp, trendingDown,
-      alertCircle, timeOutline, walletOutline, barChart,cube,documentText,peopleOutline,
+      alertCircle, timeOutline, walletOutline, barChart,cube,documentText,peopleOutline,list,
     });
   }
 
