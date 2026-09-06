@@ -6,6 +6,7 @@ import {
   IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonMenuButton, IonMenu,
   IonList, IonItem, IonAvatar, IonIcon, IonGrid, IonRow, IonCol, IonBadge
 } from '@ionic/angular/standalone';
+import { MenuController } from '@ionic/angular';
 import { Api } from '../services/api';
 import { Auth } from '../services/auth';
 import { Router } from '@angular/router';
@@ -50,6 +51,7 @@ export class DashboardPage implements OnInit {
   recentExpenses: any[] = [];
 
   currentDate = new Date();
+  isLoading = true;
 
   constructor(
     private api: Api,
