@@ -352,6 +352,9 @@ export class ChartOfAccountsPage implements OnInit {
     
     try {
       const blob = await this.api.exportChartOfAccounts().toPromise();
+      if (!blob) {
+        throw new Error('Export returned no data');
+      }
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

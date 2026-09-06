@@ -391,8 +391,8 @@ deleteRevenue(id: number): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     const headers = this.getHeaders();
-    headers = headers.delete('Content-Type');
-    return this.http.post(`${this.baseUrl}/chart-of-accounts/import`, formData, { headers })
+    const contentTypeFreeHeaders = headers.delete('Content-Type');
+    return this.http.post(`${this.baseUrl}/chart-of-accounts/import`, formData, { headers: contentTypeFreeHeaders })
       .pipe(catchError(this.handleError));
   }
 
