@@ -353,6 +353,12 @@
             <ion-textarea formControlName="notes" rows="3"></ion-textarea>
           </ion-item>
 
+          <!-- Terms and Conditions -->
+          <ion-item>
+            <ion-label position="floating">Terms and Conditions</ion-label>
+            <ion-textarea formControlName="terms_and_conditions" rows="4" placeholder="Enter terms and conditions"></ion-textarea>
+          </ion-item>
+
           <!-- Form Actions -->
           <div class="form-actions">
             <ion-button expand="block" type="submit" [disabled]="!invoiceForm.valid">
