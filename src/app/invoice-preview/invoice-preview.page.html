@@ -37,7 +37,7 @@
       </div>
 
       <!-- Terms and Conditions Section -->
-      <div *ngIf="invoice.terms_and_conditions" class="terms-section">
+      <!-- <div *ngIf="invoice.terms_and_conditions" class="terms-section">
         <div class="terms-header">
           <ion-icon name="document-text"></ion-icon>
           <h3>Terms and Conditions</h3>
@@ -45,7 +45,7 @@
         <div class="terms-content">
           <p>{{ invoice.terms_and_conditions }}</p>
         </div>
-      </div>
+      </div> -->
 
       <!-- Custom Fields Section -->
       <div *ngIf="invoice.custom_fields && invoice.custom_fields.length > 0" class="custom-fields-section">
