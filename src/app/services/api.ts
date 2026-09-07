@@ -403,4 +403,15 @@ deleteRevenue(id: number): Observable<any> {
       responseType: 'blob'
     }).pipe(catchError(this.handleError));
   }
+
+  // Bulk Updates
+  bulkUpdateInvoiceStatus(ids: number[], status: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/invoices/bulk-update-status`, { ids, status }, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
+  bulkUpdateQuoteStatus(ids: number[], status: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/quotes/bulk-update-status`, { ids, status }, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
 }

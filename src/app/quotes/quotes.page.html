@@ -24,6 +24,12 @@
     </ion-buttons>
     <ion-title>{{ selectedQuotes.length }} quote(s) selected</ion-title>
     <ion-buttons slot="end">
+      <ion-select [(ngModel)]="bulkStatus" placeholder="Update Status" interface="popover" (ionChange)="bulkUpdateStatus()">
+        <ion-select-option value="draft">Mark as Draft</ion-select-option>
+        <ion-select-option value="sent">Mark as Sent</ion-select-option>
+        <ion-select-option value="accepted">Mark as Accepted</ion-select-option>
+        <ion-select-option value="rejected">Mark as Rejected</ion-select-option>
+      </ion-select>
       <ion-button (click)="bulkEdit()" *ngIf="selectedQuotes.length === 1">
         <ion-icon name="create" slot="icon-only"></ion-icon>
       </ion-button>
@@ -46,6 +52,10 @@
   <ion-toolbar *ngIf="!isAdding && !editingQuote && selectedQuotes.length === 0">
     <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange()" placeholder="Search quotes..." animated></ion-searchbar>
     <ion-buttons slot="end">
+      <ion-button (click)="selectLastN(300)" fill="outline" size="small">
+        <ion-icon name="list" slot="start"></ion-icon>
+        Last 300
+      </ion-button>
       <ion-button [fill]="statusFilter ? 'solid' : 'clear'" (click)="toggleStatusFilter()">
         <ion-icon name="filter" slot="icon-only"></ion-icon>
       </ion-button>

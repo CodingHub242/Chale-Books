@@ -41,6 +41,7 @@ export class QuotesPage implements OnInit {
   editingQuote: any = null;
   searchTerm = '';
   customFields: any[] = [];
+  bulkStatus: string = '';
 
   // Pagination properties
   currentPage = 1;
@@ -902,6 +903,35 @@ export class QuotesPage implements OnInit {
 
   canBulkSend(): boolean {
     return this.selectedQuotes.every(quote => quote.status === 'draft');
+  }
+
+  selectLastN(count: number) {
+    const sorted = [...this.quotes].sort((a, b) => b.id - a.id);
+    const lastN = sorted.slice(0, count);
+    this.selectedQuotes = lastN;
+  }
+
+  async bulkUpdateStatus() {
+    if (!this.bulkStatus || this.selectedQuotes.length === 0) {
+      return;
+    }
+
+    const loading = await this.presentLoading('Updating status...');
+    const ids = this.selectedQuotes.map(quote => quote.id);
+
+    this.api.bulkUpdateQuoteStatus(ids, this.bulkStatus).subscribe({
+      next: async () => {
+        loading.dismiss();
+        await this.presentToast(`${this.selectedQuotes.length} quote(s) updated to ${this.bulkStatus}`, 'success');
+        this.bulkStatus = '';
+        this.clearSelection();
+        this.loadQuotes();
+      },
+      error: async (error: any) => {
+        loading.dismiss();
+        await this.presentToast('Error updating quotes: ' + error.message, 'danger');
+      }
+    });
   }
 
   async bulkDelete() {

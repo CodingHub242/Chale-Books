@@ -38,6 +38,7 @@ export class InvoicesPage implements OnInit {
   editingInvoice: any = null;
   searchTerm = '';
   customFields: any[] = [];
+  bulkStatus: string = '';
   
   // Selection and bulk actions
   selectedInvoices: any[] = [];
@@ -797,6 +798,35 @@ export class InvoicesPage implements OnInit {
     return this.selectedInvoices.every(invoice => 
       invoice.status === 'draft' || invoice.status === 'unpaid'
     );
+  }
+
+  selectLastN(count: number) {
+    const sorted = [...this.invoices].sort((a, b) => b.id - a.id);
+    const lastN = sorted.slice(0, count);
+    this.selectedInvoices = lastN;
+  }
+
+  async bulkUpdateStatus() {
+    if (!this.bulkStatus || this.selectedInvoices.length === 0) {
+      return;
+    }
+
+    const loading = await this.presentLoading('Updating status...');
+    const ids = this.selectedInvoices.map(invoice => invoice.id);
+
+    this.api.bulkUpdateInvoiceStatus(ids, this.bulkStatus).subscribe({
+      next: async () => {
+        loading.dismiss();
+        await this.presentToast(`${this.selectedInvoices.length} invoice(s) updated to ${this.bulkStatus}`, 'success');
+        this.bulkStatus = '';
+        this.clearSelection();
+        this.loadInvoices();
+      },
+      error: async (error: any) => {
+        loading.dismiss();
+        await this.presentToast('Error updating invoices: ' + error.message, 'danger');
+      }
+    });
   }
 
   async bulkDelete() {
