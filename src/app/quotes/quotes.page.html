@@ -448,13 +448,13 @@
                   <ion-col size="12" size-md="5">
                     <ion-item>
                       <ion-label position="floating">Label</ion-label>
-                      <ion-input [(ngModel)]="field.label" name="quoteCustomLabel{{i}}" placeholder="Field label"></ion-input>
+                      <ion-input [(ngModel)]="field.label" [ngModelOptions]="{standalone: true}" name="quoteCustomLabel{{i}}" placeholder="Field label"></ion-input>
                     </ion-item>
                   </ion-col>
                   <ion-col size="12" size-md="6">
                     <ion-item>
                       <ion-label position="floating">Value</ion-label>
-                      <ion-input [(ngModel)]="field.value" name="quoteCustomValue{{i}}" placeholder="Field value"></ion-input>
+                      <ion-input [(ngModel)]="field.value" [ngModelOptions]="{standalone: true}" name="quoteCustomValue{{i}}" placeholder="Field value"></ion-input>
                     </ion-item>
                   </ion-col>
                   <ion-col size="12" size-md="1">

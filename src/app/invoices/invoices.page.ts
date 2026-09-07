@@ -37,7 +37,7 @@ export class InvoicesPage implements OnInit {
   isAdding = false;
   editingInvoice: any = null;
   searchTerm = '';
-  customFields: any[] = [{ label: '', value: '' }];
+  customFields: any[] = [];
   
   // Selection and bulk actions
   selectedInvoices: any[] = [];
@@ -326,7 +326,7 @@ export class InvoicesPage implements OnInit {
 
     this.customFields = invoice.custom_fields && invoice.custom_fields.length > 0 
       ? invoice.custom_fields 
-      : [{ label: '', value: '' }];
+      : [];
 
     while (this.items.length) {
       this.items.removeAt(0);

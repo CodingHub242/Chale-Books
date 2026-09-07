@@ -40,7 +40,7 @@ export class QuotesPage implements OnInit {
   isAdding = false;
   editingQuote: any = null;
   searchTerm = '';
-  customFields: any[] = [{ label: '', value: '' }];
+  customFields: any[] = [];
 
   // Pagination properties
   currentPage = 1;
@@ -402,7 +402,7 @@ export class QuotesPage implements OnInit {
 
     this.customFields = quote.custom_fields && quote.custom_fields.length > 0 
       ? quote.custom_fields 
-      : [{ label: '', value: '' }];
+      : [];
 
     while (this.items.length) {
       this.items.removeAt(0);
