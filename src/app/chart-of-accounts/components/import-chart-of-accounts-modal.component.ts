@@ -47,7 +47,10 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
     { field: 'Account Code', column: 'code', required: false },
     { field: 'Account Type', column: 'type', required: true },
     { field: 'Subtype', column: 'subtype', required: false },
+    { field: 'Category', column: 'category', required: false },
+    { field: 'Normal Balance', column: 'normal_balance', required: false },
     { field: 'Description', column: 'description', required: false },
+    { field: 'Notes', column: 'notes', required: false },
     { field: 'Status', column: 'status', required: false }
   ];
 
@@ -57,6 +60,11 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
     { value: 'equity', label: 'Equity' },
     { value: 'income', label: 'Income' },
     { value: 'expense', label: 'Expense' }
+  ];
+
+  normalBalanceOptions = [
+    { value: 'debit', label: 'Debit' },
+    { value: 'credit', label: 'Credit' }
   ];
 
   constructor(
@@ -109,11 +117,11 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
   }
 
   downloadTemplate() {
-    const headers = ['Account Name', 'Account Code', 'Account Type', 'Subtype', 'Description', 'Status'];
+    const headers = ['Account Name', 'Account Code', 'Account Type', 'Subtype', 'Category', 'Normal Balance', 'Description', 'Notes', 'Status'];
     const sampleData = [
-      ['Cash', '1000', 'Asset', 'Cash', 'Main cash account', 'Active'],
-      ['Sales Revenue', '4000', 'Income', 'Sales', 'Primary sales income', 'Active'],
-      ['Rent Expense', '6000', 'Expense', 'Rent', 'Office rent', 'Active']
+      ['Cash', '1000', 'Asset', 'Cash', 'Operating', 'Debit', 'Main cash account', 'Petty cash notes', 'Active'],
+      ['Sales Revenue', '4000', 'Income', 'Sales', 'Operating', 'Credit', 'Primary sales income', 'Service revenue', 'Active'],
+      ['Rent Expense', '6000', 'Expense', 'Rent', 'Operating', 'Debit', 'Office rent', 'Monthly rent', 'Active']
     ];
 
     const csvContent = [headers, ...sampleData]
@@ -269,6 +277,9 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
           if (field.column === 'status') {
             value = this.normalizeStatus(value);
           }
+          if (field.column === 'normal_balance') {
+            value = this.normalizeNormalBalance(value);
+          }
           mappedRow[field.column] = value;
 
           if (field.required && !value) {
@@ -299,7 +310,13 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
   private normalizeStatus(value: string): string {
     if (!value) return 'active';
     const normalized = value.toLowerCase().trim();
-    return in_array(normalized, ['active', 'inactive']) ? normalized : 'active';
+    return ['active', 'inactive'].includes(normalized) ? normalized : 'active';
+  }
+
+  private normalizeNormalBalance(value: string): string {
+    if (!value) return 'debit';
+    const normalized = value.toLowerCase().trim();
+    return ['debit', 'credit'].includes(normalized) ? normalized : 'debit';
   }
 
   previousStep() {
@@ -322,7 +339,10 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
             code: row.code || '',
             type: row.type,
             subtype: row.subtype || '',
+            category: row.category || '',
+            normal_balance: row.normal_balance || '',
             description: row.description || '',
+            notes: row.notes || '',
             is_active: row.status === 'active'
           }).subscribe({
             next: () => resolve({ success: true, row: index + 2 }),
@@ -348,8 +368,4 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
     });
     document.dispatchEvent(event);
   }
-}
-
-function in_array(value: string, array: string[]): boolean {
-  return array.includes(value);
 }

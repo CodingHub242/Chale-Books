@@ -40,7 +40,10 @@ export class ChartOfAccountsPage implements OnInit {
     code: '',
     type: 'expense',
     subtype: '',
-    description: ''
+    category: '',
+    normal_balance: 'debit',
+    description: '',
+    notes: ''
   };
 
   searchTerm = '';
@@ -183,7 +186,10 @@ export class ChartOfAccountsPage implements OnInit {
       code: account.code || '',
       type: account.type,
       subtype: account.subtype || '',
-      description: account.description || ''
+      category: account.category || '',
+      normal_balance: account.normal_balance || 'debit',
+      description: account.description || '',
+      notes: account.notes || ''
     };
   }
 
@@ -198,7 +204,10 @@ export class ChartOfAccountsPage implements OnInit {
       code: '',
       type: 'expense',
       subtype: '',
-      description: ''
+      category: '',
+      normal_balance: 'debit',
+      description: '',
+      notes: ''
     };
   }
 

@@ -159,11 +159,15 @@
               <span>Name</span>
               <span>Code</span>
               <span>Type</span>
+              <span>Category</span>
+              <span>Normal Balance</span>
             </div>
             <div class="preview-row" *ngFor="let row of validData | slice:0:3">
               <span>{{ row.name || '-' }}</span>
               <span>{{ row.code || '-' }}</span>
               <span>{{ row.type || '-' }}</span>
+              <span>{{ row.category || '-' }}</span>
+              <span>{{ row.normal_balance || '-' }}</span>
             </div>
           </div>
         </div>
