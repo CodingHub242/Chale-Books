@@ -51,6 +51,11 @@ export class ChartOfAccountsPage implements OnInit {
   selectAll = false;
   isImportModalOpen = false;
 
+  currentPage = 1;
+  perPage = 50;
+  totalPages = 1;
+  totalItems = 0;
+
   typeOptions = [
     { value: 'asset', label: 'Asset' },
     { value: 'liability', label: 'Liability' },
@@ -123,10 +128,17 @@ export class ChartOfAccountsPage implements OnInit {
 
   async loadAccounts() {
     const loading = await this.presentLoading('Loading accounts...');
-    this.api.getChartOfAccounts().subscribe({
+    this.api.getChartOfAccounts(this.getActiveFilterValue(), this.currentPage, this.perPage).subscribe({
       next: (response: any) => {
         this.accounts = (response.data || []).map((acc: any) => ({ ...acc, selected: false }));
         this.applyFilters();
+
+        const meta = response.meta || {};
+        this.totalPages = meta.last_page || 1;
+        this.totalItems = meta.total || 0;
+        this.perPage = meta.per_page || this.perPage;
+        this.currentPage = meta.current_page || this.currentPage;
+
         loading.dismiss();
       },
       error: async (error: any) => {
@@ -134,6 +146,12 @@ export class ChartOfAccountsPage implements OnInit {
         await this.presentToast('Error loading accounts: ' + error.message, 'danger');
       }
     });
+  }
+
+  getActiveFilterValue(): string | undefined {
+    if (this.activeFilter === 'active') return 'active';
+    if (this.activeFilter === 'inactive') return 'inactive';
+    return undefined;
   }
 
   applyFilters() {
@@ -160,11 +178,35 @@ export class ChartOfAccountsPage implements OnInit {
 
   onSearch(event: any) {
     this.searchTerm = event.detail.value || '';
+    this.currentPage = 1;
     this.applyFilters();
+    this.loadAccounts();
   }
 
   onActiveFilterChange() {
+    this.currentPage = 1;
     this.applyFilters();
+    this.loadAccounts();
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.loadAccounts();
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadAccounts();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadAccounts();
+    }
   }
 
   getSubtypeOptions() {
@@ -454,5 +496,21 @@ export class ChartOfAccountsPage implements OnInit {
 
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 }

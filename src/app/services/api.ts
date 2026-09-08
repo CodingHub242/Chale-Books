@@ -358,10 +358,10 @@ deleteRevenue(id: number): Observable<any> {
   }
 
   // Chart of Accounts
-  getChartOfAccounts(type?: string): Observable<any> {
-    let params = '';
+  getChartOfAccounts(type?: string, page: number = 1, perPage: number = 50): Observable<any> {
+    let params = `?page=${encodeURIComponent(page)}&per_page=${encodeURIComponent(perPage)}`;
     if (type) {
-      params = `?type=${encodeURIComponent(type)}`;
+      params += `&type=${encodeURIComponent(type)}`;
     }
     return this.http.get(`${this.baseUrl}/chart-of-accounts${params}`, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));

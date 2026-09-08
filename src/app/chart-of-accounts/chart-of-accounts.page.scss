@@ -395,6 +395,79 @@ ion-toolbar {
       padding: 16px;
     }
   }
+
+  .pagination-container {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+
+    .pagination-controls {
+      justify-content: center;
+    }
+
+    .page-numbers {
+      ion-button {
+        --padding-start: 8px;
+        --padding-end: 8px;
+        min-width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+// Pagination
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  margin-top: 16px;
+  gap: 16px;
+
+  .pagination-info {
+    font-size: 13px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    ion-button {
+      --border-radius: 6px;
+      height: 36px;
+      font-size: 13px;
+      text-transform: none;
+    }
+  }
+
+  .page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    ion-button {
+      --border-radius: 50%;
+      --padding-start: 0;
+      --padding-end: 0;
+      min-width: 36px;
+      height: 36px;
+      font-size: 13px;
+      font-weight: 500;
+
+      &.active {
+        --background: #1a1a2e;
+        --color: white;
+      }
+    }
+  }
 }
 
 // Import Modal Styling
