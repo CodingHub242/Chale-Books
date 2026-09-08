@@ -337,10 +337,10 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
       this.importProgress = 100;
       this.isImporting = false;
 
-      if (response && response.success) {
+      if (response) {
         this.importResult = {
-          success: response.success_count || this.validData.length,
-          failed: response.failed_count || 0
+          success: response.success_count ?? this.validData.length,
+          failed: response.failed_count ?? 0
         };
       } else {
         this.importResult = {
