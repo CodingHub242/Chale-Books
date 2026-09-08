@@ -396,6 +396,12 @@ deleteRevenue(id: number): Observable<any> {
       .pipe(catchError(this.handleError));
   }
 
+  importChartOfAccountsData(data: any[]): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.post(`${this.baseUrl}/chart-of-accounts/import-data`, { data }, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
   exportChartOfAccounts(): Observable<Blob> {
     const headers = this.getHeaders();
     return this.http.get(`${this.baseUrl}/chart-of-accounts/export`, {

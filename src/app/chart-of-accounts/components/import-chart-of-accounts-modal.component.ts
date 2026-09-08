@@ -327,38 +327,36 @@ export class ImportChartOfAccountsModalComponent implements OnInit {
 
   async importAccounts() {
     if (this.validData.length === 0) return;
-    
+
     this.isImporting = true;
     this.importProgress = 0;
 
-    const promises = this.validData.map((row: any, index: number) => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          this.api.createChartOfAccount({
-            name: row.name,
-            code: row.code || '',
-            type: row.type,
-            subtype: row.subtype || '',
-            category: row.category || '',
-            normal_balance: row.normal_balance || '',
-            description: row.description || '',
-            notes: row.notes || '',
-            is_active: row.status === 'active'
-          }).subscribe({
-            next: () => resolve({ success: true, row: index + 2 }),
-            error: () => resolve({ success: false, row: index + 2 })
-          });
-        }, index * 50);
-      });
-    });
+    try {
+      const response = await this.api.importChartOfAccountsData(this.validData).toPromise();
 
-    const results = await Promise.all(promises);
-    const successCount = results.filter((r: any) => r.success).length;
-    const failedCount = results.length - successCount;
+      this.importProgress = 100;
+      this.isImporting = false;
 
-    this.importProgress = 100;
-    this.isImporting = false;
-    this.importResult = { success: successCount, failed: failedCount };
+      if (response && response.success) {
+        this.importResult = {
+          success: response.success_count || this.validData.length,
+          failed: response.failed_count || 0
+        };
+      } else {
+        this.importResult = {
+          success: 0,
+          failed: this.validData.length
+        };
+      }
+    } catch (error: any) {
+      this.isImporting = false;
+      this.importResult = {
+        success: 0,
+        failed: this.validData.length
+      };
+      const message = error?.error?.message || error.message || 'Import failed. Please try again.';
+      alert(message);
+    }
   }
 
   close() {
