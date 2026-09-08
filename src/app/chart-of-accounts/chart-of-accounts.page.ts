@@ -128,7 +128,7 @@ export class ChartOfAccountsPage implements OnInit {
 
   async loadAccounts() {
     const loading = await this.presentLoading('Loading accounts...');
-    this.api.getChartOfAccounts(this.getActiveFilterValue(), this.currentPage, this.perPage).subscribe({
+    this.api.getChartOfAccounts(undefined, this.currentPage, this.perPage).subscribe({
       next: (response: any) => {
         this.accounts = (response.data || []).map((acc: any) => ({ ...acc, selected: false }));
         this.applyFilters();
@@ -146,12 +146,6 @@ export class ChartOfAccountsPage implements OnInit {
         await this.presentToast('Error loading accounts: ' + error.message, 'danger');
       }
     });
-  }
-
-  getActiveFilterValue(): string | undefined {
-    if (this.activeFilter === 'active') return 'active';
-    if (this.activeFilter === 'inactive') return 'inactive';
-    return undefined;
   }
 
   applyFilters() {
