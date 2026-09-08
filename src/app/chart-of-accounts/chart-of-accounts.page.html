@@ -196,7 +196,7 @@
 
       <div class="pagination-container" *ngIf="totalPages > 1">
         <div class="pagination-info">
-          <span>Showing {{ (currentPage - 1) * perPage + 1 }} to {{ Math.min(currentPage * perPage, totalItems) }} of {{ totalItems }} accounts</span>
+          <span>Showing {{ showingStart }} to {{ showingEnd }} of {{ totalItems }} accounts</span>
         </div>
         <div class="pagination-controls">
           <ion-button fill="outline" size="small" [disabled]="currentPage === 1" (click)="prevPage()">

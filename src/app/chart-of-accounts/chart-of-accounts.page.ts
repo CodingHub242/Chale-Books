@@ -513,4 +513,13 @@ export class ChartOfAccountsPage implements OnInit {
     }
     return pages;
   }
+
+  get showingEnd(): number {
+    return Math.min(this.currentPage * this.perPage, this.totalItems);
+  }
+
+  get showingStart(): number {
+    if (this.totalItems === 0) return 0;
+    return (this.currentPage - 1) * this.perPage + 1;
+  }
 }
