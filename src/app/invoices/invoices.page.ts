@@ -90,7 +90,7 @@ export class InvoicesPage implements OnInit {
       due_date: ['', Validators.required],
       status: ['draft'],
       notes: [''],
-      terms_and_conditions: [''],
+     // terms_and_conditions: [''],
       trip_show: [''],
       trip_show_details: [''],
       items: this.fb.array([this.createItem()])
@@ -320,7 +320,7 @@ export class InvoicesPage implements OnInit {
       due_date: invoice.due_date,
       status: invoice.status,
       notes: invoice.notes || '',
-      terms_and_conditions: invoice.terms_and_conditions || '',
+      //terms_and_conditions: invoice.terms_and_conditions || '',
       trip_show: invoice.trip_show || '',
       trip_show_details: invoice.trip_show_details || ''
     });
@@ -450,8 +450,8 @@ export class InvoicesPage implements OnInit {
         'If you have any questions regarding this invoice, please contact us.\n' +
         'Thank you for your continued business.\n' +
         'Best regards,\n' +
-        'Chale App' +
-        (invoice.terms_and_conditions ? '\n\n--- Terms and Conditions ---\n' + invoice.terms_and_conditions : '')
+        'Chale App'
+        //(invoice.terms_and_conditions ? '\n\n--- Terms and Conditions ---\n' + invoice.terms_and_conditions : '')
     });
 
     // Load PDF for attachment
