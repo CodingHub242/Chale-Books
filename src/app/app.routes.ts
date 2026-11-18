@@ -72,6 +72,10 @@ export const routes: Routes = [
     loadComponent: () => import('./quote-templates/quote-templates.page').then( m => m.QuoteTemplatesPage)
   },
   {
+    path: 'receipts',
+    loadComponent: () => import('./receipts/receipts.page').then( m => m.ReceiptsPage)
+  },
+  {
     path: 'items',
     loadComponent: () => import('./items/items.page').then( m => m.ItemsPage)
   },

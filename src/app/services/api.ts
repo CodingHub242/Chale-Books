@@ -125,6 +125,20 @@ export class Api {
     }).pipe(catchError(this.handleError));
   }
 
+  downloadReceiptPdfFromInvoice(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/invoices/${id}/receipt/pdf`, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
+    }).pipe(catchError(this.handleError));
+  }
+
+  generateReceiptPdf(data: any): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/receipts/pdf`, data, {
+      headers: this.getHeaders(),
+      responseType: 'blob'
+    }).pipe(catchError(this.handleError));
+  }
+
   // Expenses
   getExpenses(): Observable<any> {
     return this.http.get(`${this.baseUrl}/expenses`, { headers: this.getHeaders() })

@@ -1,0 +1,3 @@
+- [x] Add import for Illuminate\Support\Facades\Schedule in routes/console.php
+- [x] Add Schedule::command('invoices:generate-recurring')->daily(); in routes/console.php
+- [x] Remove or update the comment "//add invoices:generate-recurring daily schedule"

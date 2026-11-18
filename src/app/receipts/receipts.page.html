@@ -1,0 +1,13 @@
+<div class="container">
+  <h2>Receipt Builder</h2>
+  <textarea [(ngModel)]="receipt.notes" placeholder="Notes"></textarea>
+  <div *ngFor="let it of receipt.items; let i=index">
+    {{it.description}} x{{it.quantity}} @{{it.unit_price}}
+    <button (click)="removeItem(i)">Remove</button>
+  </div>
+  <input [(ngModel)]="newItem.description" placeholder="Description">
+  <input type="number" [(ngModel)]="newItem.quantity" placeholder="Qty">
+  <input type="number" [(ngModel)]="newItem.unit_price" placeholder="Unit price">
+  <button (click)="addItem()">Add Item</button>
+  <button (click)="generate()">Generate PDF</button>
+</div>
