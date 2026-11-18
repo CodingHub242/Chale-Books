@@ -29,7 +29,17 @@
         </div>
 
         <div class="form-group">
-          <label for="receiptNotes">Client / Customer details</label>
+          <label for="customerName">Customer name</label>
+          <input
+            id="customerName"
+            type="text"
+            [(ngModel)]="receipt.customer_name"
+            placeholder="Enter customer or company name">
+          <small>This name will appear in the Billed To section of the PDF.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="receiptNotes">Notes</label>
           <textarea
             id="receiptNotes"
             [(ngModel)]="receipt.notes"
@@ -196,17 +206,18 @@
         <!-- Customer details -->
         <div class="paper-details">
           <div>
-            <span class="paper-label">RECEIVED FROM / NOTES</span>
+            <span class="paper-label">BILLED TO</span>
             <strong class="customer-name">
-              {{ receipt.notes || 'Customer details will appear here' }}
+              {{ receipt.customer_name || 'Customer name will appear here' }}
             </strong>
           </div>
 
-          <div class="paper-meta">
-            <span class="paper-label">DOCUMENT</span>
-            <strong>Receipt preview</strong>
+          <div *ngIf="receipt.notes">
+            <span class="paper-label">NOTES</span>
+            <strong class="customer-name">{{ receipt.notes }}</strong>
           </div>
         </div>
+
 
         <!-- Items -->
         <div class="paper-items">

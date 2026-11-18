@@ -11,7 +11,7 @@ import { Api } from '../services/api';
   styleUrls: ['./receipts.page.scss']
 })
 export class ReceiptsPage {
-  receipt: any = { notes: '', items: [] };
+  receipt: any = { customer_name: '',notes: '', items: [] };
   newItem = { description: '', quantity: 1, unit_price: 0 };
 
   constructor(private api: Api) {}
@@ -56,25 +56,33 @@ export class ReceiptsPage {
     this.receipt.items.splice(index, 1);
   }
 
-  generate(): void {
-    if (!this.receipt.items.length) {
-      return;
-    }
-
-    this.api.generateReceiptPdf(this.receipt).subscribe({
-      next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-
-        link.href = url;
-        link.download = 'receipt.pdf';
-        link.click();
-
-        window.URL.revokeObjectURL(url);
-      },
-      error: (error: any) => {
-        console.error('Receipt generation failed:', error);
-      }
-    });
+  
+generate(): void {
+  if (!this.receipt.items.length) {
+    return;
   }
+
+  const payload = {
+    ...this.receipt,
+    customer_name: this.receipt.customer_name.trim(),
+    total: this.receiptTotal
+  };
+
+  this.api.generateReceiptPdf(payload).subscribe({
+    next: (blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = 'receipt.pdf';
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+    },
+    error: (error: any) => {
+      console.error('Receipt generation failed:', error);
+    }
+  });
+}
+
 }
