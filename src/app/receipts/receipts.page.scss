@@ -753,3 +753,44 @@
     padding: 16px;
   }
 }
+
+/* Ensure the receipt page can scroll naturally */
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.receipt-studio {
+  min-height: 100vh;
+  height: auto;
+  overflow: visible;
+  padding-bottom: 70px;
+}
+
+.studio-layout,
+.editor-panel {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.preview-panel {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+/* On mobile, allow the entire page to scroll */
+@media (max-width: 760px) {
+  .preview-panel {
+    position: static;
+  }
+
+  .receipt-studio {
+    min-height: 100dvh;
+    overflow: visible;
+  }
+}
