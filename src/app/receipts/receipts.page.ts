@@ -7,7 +7,8 @@ import { Api } from '../services/api';
   selector: 'app-receipts',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './receipts.page.html'
+  templateUrl: './receipts.page.html',
+  styleUrls: ['./receipts.page.scss']
 })
 export class ReceiptsPage {
   receipt: any = { notes: '', items: [] };

@@ -570,6 +570,26 @@ export class InvoicesPage implements OnInit {
     });
   }
 
+  async downloadReceipt(invoice: any) {
+    const loading = await this.presentLoading('Downloading Receipt...');
+    this.api.downloadReceiptPdfFromInvoice(invoice.id).subscribe({
+      next: (blob: Blob) => {
+        loading.dismiss();
+        const url = window.URL.createObjectURL(blob);
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = `receipt-${invoice.invoice_number}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.presentToast('Receipt downloaded successfully!', 'success');
+      },
+      error: async (error: any) => {
+        loading.dismiss();
+        await this.presentToast('Error downloading receipt: ' + error.message, 'danger');
+      }
+    });
+  }
+
   cancelEdit() {
     this.editingInvoice = null;
     this.invoiceForm.reset();
