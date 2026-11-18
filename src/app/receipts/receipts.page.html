@@ -1,19 +1,256 @@
-<div class="container">
-  <h2>Receipt Builder</h2>
-  <textarea [(ngModel)]="receipt.notes" placeholder="Notes / Client"></textarea>
-  <div class="row">
-    <input [(ngModel)]="newItem.description" placeholder="Description">
-    <input type="number" [(ngModel)]="newItem.quantity" placeholder="Qty">
-    <input type="number" [(ngModel)]="newItem.unit_price" placeholder="Unit price">
-    <button (click)="addItem()">Add</button>
-  </div>
-  <div class="items">
-    <div class="item" *ngFor="let it of receipt.items; let i=index">
-      <span>{{it.description}} × {{it.quantity}} @ {{it.unit_price}}</span>
-      <button class="secondary" (click)="removeItem(i)">Remove</button>
+<div class="receipt-studio">
+  <!-- Page header -->
+  <header class="studio-header">
+    <div>
+      <div class="eyebrow">CHALE BOOKS</div>
+      <h1>Receipt Studio</h1>
+      <p>Create, customise and generate receipts.</p>
     </div>
-  </div>
-  <div class="actions">
-    <button (click)="generate()">Generate PDF</button>
+
+    <div class="draft-indicator">
+      <span class="status-dot"></span>
+      Draft receipt
+    </div>
+  </header>
+
+  <div class="studio-layout">
+
+    <!-- LEFT: EDITOR -->
+    <section class="editor-panel">
+
+      <!-- Receipt information -->
+      <div class="editor-card">
+        <div class="section-heading">
+          <div>
+            <span class="section-number">01</span>
+            <h2>Receipt information</h2>
+          </div>
+          <span class="section-hint">Basic details</span>
+        </div>
+
+        <div class="form-group">
+          <label for="receiptNotes">Client / Customer details</label>
+          <textarea
+            id="receiptNotes"
+            [(ngModel)]="receipt.notes"
+            placeholder="Enter customer name, contact or additional notes..."
+            rows="3">
+          </textarea>
+          <small>This information will appear on the receipt.</small>
+        </div>
+      </div>
+
+      <!-- Add items -->
+      <div class="editor-card">
+        <div class="section-heading">
+          <div>
+            <span class="section-number">02</span>
+            <h2>Receipt items</h2>
+          </div>
+          <span class="section-hint">{{ receipt.items.length }} items</span>
+        </div>
+
+        <div class="item-entry">
+          <div class="form-group description-field">
+            <label for="itemDescription">Description</label>
+            <input
+              id="itemDescription"
+              type="text"
+              [(ngModel)]="newItem.description"
+              placeholder="e.g. Website design">
+          </div>
+
+          <div class="form-group quantity-field">
+            <label for="itemQuantity">Quantity</label>
+            <input
+              id="itemQuantity"
+              type="number"
+              min="1"
+              [(ngModel)]="newItem.quantity"
+              placeholder="1">
+          </div>
+
+          <div class="form-group price-field">
+            <label for="itemPrice">Unit price</label>
+            <input
+              id="itemPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              [(ngModel)]="newItem.unit_price"
+              placeholder="0.00">
+          </div>
+
+          <button
+            type="button"
+            class="add-item-button"
+            (click)="addItem()"
+            [disabled]="!canAddItem">
+            <span class="plus-icon">+</span>
+            Add item
+          </button>
+        </div>
+
+        <!-- Added items -->
+        <div class="added-items">
+          <div class="items-header" *ngIf="receipt.items.length">
+            <span>DESCRIPTION</span>
+            <span>QTY</span>
+            <span>UNIT PRICE</span>
+            <span></span>
+          </div>
+
+          <div
+            class="added-item"
+            *ngFor="let item of receipt.items; let i = index">
+
+            <div class="added-description">
+              <span class="item-indicator"></span>
+              <span>{{ item.description }}</span>
+            </div>
+
+            <span class="item-quantity">{{ item.quantity }}</span>
+
+            <span class="item-price">
+              {{ item.unit_price | number:'1.2-2' }}
+            </span>
+
+            <button
+              type="button"
+              class="remove-button"
+              title="Remove item"
+              (click)="removeItem(i)">
+              &times;
+            </button>
+          </div>
+
+          <div class="empty-items" *ngIf="!receipt.items.length">
+            <div class="empty-icon">
+              <span>+</span>
+            </div>
+            <strong>No items added yet</strong>
+            <p>Add your first item using the fields above.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="editor-summary">
+        <div>
+          <span class="summary-label">Receipt total</span>
+          <strong>{{ receiptTotal | number:'1.2-2' }}</strong>
+        </div>
+        <span class="summary-count">
+          {{ receipt.items.length }} line item(s)
+        </span>
+      </div>
+
+      <!-- Generate -->
+      <button
+        type="button"
+        class="generate-button"
+        (click)="generate()"
+        [disabled]="!receipt.items.length">
+        <span>Generate PDF</span>
+        <span class="generate-arrow">→</span>
+      </button>
+
+      <p class="generate-note">
+        Your receipt will be generated as a downloadable PDF.
+      </p>
+    </section>
+
+    <!-- RIGHT: LIVE PREVIEW -->
+    <aside class="preview-panel">
+      <div class="preview-heading">
+        <div>
+          <span class="preview-eyebrow">LIVE PREVIEW</span>
+          <h2>Your receipt</h2>
+        </div>
+        <span class="preview-status">Preview</span>
+      </div>
+
+      <div class="receipt-paper">
+        <!-- Receipt top -->
+        <div class="paper-header">
+          <div class="brand-mark">ChaleApp</div>
+          <div class="brand-details">
+            <strong>Chale Books</strong>
+            <span>Business made simpler.</span>
+          </div>
+        </div>
+
+        <div class="paper-title">
+          <span>PAYMENT DOCUMENT</span>
+          <h3>Receipt</h3>
+          <p>Thank you for your business.</p>
+        </div>
+
+        <div class="paper-divider"></div>
+
+        <!-- Customer details -->
+        <div class="paper-details">
+          <div>
+            <span class="paper-label">RECEIVED FROM / NOTES</span>
+            <strong class="customer-name">
+              {{ receipt.notes || 'Customer details will appear here' }}
+            </strong>
+          </div>
+
+          <div class="paper-meta">
+            <span class="paper-label">DOCUMENT</span>
+            <strong>Receipt preview</strong>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="paper-items">
+          <div class="paper-table-header">
+            <span>DESCRIPTION</span>
+            <span>QTY</span>
+            <span>AMOUNT</span>
+          </div>
+
+          <div
+            class="paper-item"
+            *ngFor="let item of receipt.items">
+
+            <span class="paper-item-name">
+              {{ item.description }}
+            </span>
+
+            <span>{{ item.quantity }}</span>
+
+            <strong>
+              {{ (item.quantity * item.unit_price) | number:'1.2-2' }}
+            </strong>
+          </div>
+
+          <div class="preview-empty" *ngIf="!receipt.items.length">
+            Your added items will appear here.
+          </div>
+        </div>
+
+        <!-- Total -->
+        <div class="paper-total">
+          <span>Total</span>
+          <strong>{{ receiptTotal | number:'1.2-2' }}</strong>
+        </div>
+
+        <div class="paper-footer">
+          <span>THANK YOU FOR CHOOSING CHALE BOOKS</span>
+          <div class="footer-line"></div>
+          <p>Prepared with Chale Books</p>
+        </div>
+      </div>
+
+      <div class="preview-tip">
+        <span class="tip-icon">✦</span>
+        <p>
+          Your preview updates automatically as you edit the receipt.
+        </p>
+      </div>
+    </aside>
+
   </div>
 </div>

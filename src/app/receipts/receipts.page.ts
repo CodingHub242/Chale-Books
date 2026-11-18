@@ -16,19 +16,65 @@ export class ReceiptsPage {
 
   constructor(private api: Api) {}
 
-  addItem() {
-    this.receipt.items.push({ ...this.newItem });
-    this.newItem = { description: '', quantity: 1, unit_price: 0 };
+  get receiptTotal(): number {
+    return this.receipt.items.reduce(
+      (total: number, item: any) =>
+        total + (Number(item.quantity) * Number(item.unit_price)),
+      0
+    );
   }
 
-  removeItem(i: number) { this.receipt.items.splice(i, 1); }
+  get canAddItem(): boolean {
+    return (
+      !!this.newItem.description.trim() &&
+      Number(this.newItem.quantity) > 0 &&
+      Number(this.newItem.unit_price) >= 0 &&
+      Number.isFinite(Number(this.newItem.quantity)) &&
+      Number.isFinite(Number(this.newItem.unit_price))
+    );
+  }
 
-  generate() {
-    this.api.generateReceiptPdf(this.receipt).subscribe(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'receipt.pdf'; a.click();
-      window.URL.revokeObjectURL(url);
+ addItem(): void {
+    if (!this.canAddItem) {
+      return;
+    }
+
+    this.receipt.items.push({
+      description: this.newItem.description.trim(),
+      quantity: Number(this.newItem.quantity),
+      unit_price: Number(this.newItem.unit_price)
+    });
+
+    this.newItem = {
+      description: '',
+      quantity: 1,
+      unit_price: 0
+    };
+  }
+
+   removeItem(index: number): void {
+    this.receipt.items.splice(index, 1);
+  }
+
+  generate(): void {
+    if (!this.receipt.items.length) {
+      return;
+    }
+
+    this.api.generateReceiptPdf(this.receipt).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'receipt.pdf';
+        link.click();
+
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error: any) => {
+        console.error('Receipt generation failed:', error);
+      }
     });
   }
 }
