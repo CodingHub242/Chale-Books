@@ -794,3 +794,23 @@
     overflow: visible;
   }
 }
+
+.paper-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-logo {
+  display: block;
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  border-radius: 7px;
+}
+
+.brand-details strong {
+  color: #183b32;
+  font-size: 16px;
+  font-weight: 800;
+}
