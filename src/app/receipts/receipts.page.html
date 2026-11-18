@@ -1,13 +1,19 @@
 <div class="container">
   <h2>Receipt Builder</h2>
-  <textarea [(ngModel)]="receipt.notes" placeholder="Notes"></textarea>
-  <div *ngFor="let it of receipt.items; let i=index">
-    {{it.description}} x{{it.quantity}} @{{it.unit_price}}
-    <button (click)="removeItem(i)">Remove</button>
+  <textarea [(ngModel)]="receipt.notes" placeholder="Notes / Client"></textarea>
+  <div class="row">
+    <input [(ngModel)]="newItem.description" placeholder="Description">
+    <input type="number" [(ngModel)]="newItem.quantity" placeholder="Qty">
+    <input type="number" [(ngModel)]="newItem.unit_price" placeholder="Unit price">
+    <button (click)="addItem()">Add</button>
   </div>
-  <input [(ngModel)]="newItem.description" placeholder="Description">
-  <input type="number" [(ngModel)]="newItem.quantity" placeholder="Qty">
-  <input type="number" [(ngModel)]="newItem.unit_price" placeholder="Unit price">
-  <button (click)="addItem()">Add Item</button>
-  <button (click)="generate()">Generate PDF</button>
+  <div class="items">
+    <div class="item" *ngFor="let it of receipt.items; let i=index">
+      <span>{{it.description}} × {{it.quantity}} @ {{it.unit_price}}</span>
+      <button class="secondary" (click)="removeItem(i)">Remove</button>
+    </div>
+  </div>
+  <div class="actions">
+    <button (click)="generate()">Generate PDF</button>
+  </div>
 </div>
