@@ -318,9 +318,9 @@
         ? ($receipt->created_at ?? '')
         : '';
 
-    $clientName = $isObject
-        ? ($client->name ?? '')
-        : '';
+   $clientName = $isObject
+    ? ($client->name ?? '')
+    : ($receipt['customer_name'] ?? '');
 
     $total = $isObject
         ? ($receipt->total ?? 0)
@@ -331,8 +331,8 @@
         : '';
 
     $notes = $isObject
-        ? ''
-        : ($receipt['notes'] ?? '');
+    ? ''
+    : ($receipt['notes'] ?? '');
 @endphp
 
 <div class="receipt">
@@ -352,7 +352,11 @@
                         alt="Company Logo"
                     >
                 @else
-                    <div class="brand-name">Chale Books</div>
+                     <img
+                        src="https://boltesolutions.net/books/public/Chalelogo.jpg"
+                        class="logo"
+                        alt="Company Logo"
+                    >
                 @endif
             </div>
 
@@ -362,6 +366,8 @@
 
                 @if($status)
                     <span class="status">{{ $status }}</span>
+                @else
+                    <span class="status">PAID</span>
                 @endif
             </div>
 
@@ -402,25 +408,15 @@
 
             </div>
 
+            
             <div class="details-column">
-
                 <div class="section-label">Billed To</div>
-
-                @if($isObject)
-
-                    <div class="customer-name">
-                        {{ $clientName ?: 'Customer' }}
-                    </div>
-
-                @else
-
-                    <div class="customer-name">
-                        Chale Books Customer
-                    </div>
-
-                @endif
-
+            
+                <div class="customer-name">
+                    {{ $clientName ?: 'Customer' }}
+                </div>
             </div>
+
 
         </div>
 
@@ -517,7 +513,15 @@
                 </div>
 
             </div>
-
+        @else
+        <div class="summary">
+            <div class="summary-row">
+                <span>Total Amount</span>
+                <span>
+                    {{ number_format($total, 2) }}
+                </span>
+            </div>
+        </div>
         @endif
 
         <!-- Footer -->
@@ -526,7 +530,7 @@
             We appreciate your trust and look forward to serving you again.
         </div>
 
-        <div class="footer">
+        {{--<div class="footer">
 
             <div class="footer-title">
                 Thank You!
@@ -540,7 +544,7 @@
                 Powered by ChaleApp
             </div>
 
-        </div>
+        </div>--}}
 
     </div>
 
